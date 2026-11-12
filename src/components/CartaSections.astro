@@ -1,0 +1,23 @@
+---
+/** Secciones de un panel de la carta: título, ítems con línea de puntos y precio. */
+import { formatPrice, type CartaSection } from '../data/carta';
+interface Props { sections: CartaSection[]; }
+const { sections } = Astro.props;
+---
+{sections.map((sec) => (
+  <div class="cs-block">
+    <h3 class="cs-title">{sec.title}</h3>
+    {sec.items && (
+      <ul class="cs-list" role="list">
+        {sec.items.map((it) => (
+          <li class="cs-item">
+            <span class="cs-name">{it.name}</span>
+            <span class="cs-dots" aria-hidden="true"></span>
+            {it.price !== null && <span class="cs-price">{formatPrice(it.price)}</span>}
+          </li>
+        ))}
+      </ul>
+    )}
+    {sec.text && <p class="cs-text">{sec.text}</p>}
+  </div>
+))}

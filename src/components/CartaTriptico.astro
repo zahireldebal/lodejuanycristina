@@ -1,0 +1,456 @@
+---
+/**
+ * Nuestra carta: tríptico 3D que se abre en dos pasos, recreado en HTML/CSS.
+ * El contenido sale de src/data/carta.ts (texto real, legible por buscadores y lectores de pantalla).
+ */
+import '@fontsource/patrick-hand/400.css';
+import Icon from './Icon.astro';
+import CartaSections from './CartaSections.astro';
+import { chefSvg } from './chef-svg.mjs';
+import { carta } from '../data/carta';
+import type { Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).carta;
+const ext = carta.exterior;
+const int = carta.interior;
+const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
+---
+<section id="carta" class="tri-section on-dark relative isolate py-28 text-cream sm:py-36" aria-labelledby="carta-title">
+  <div class="container-x">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="kicker justify-center !text-[#f0b9c8]">{s.kicker}</p>
+      <h2 id="carta-title" class="mt-3 text-3xl font-semibold text-cream sm:text-4xl lg:text-5xl">{s.title}</h2>
+      <p class="mt-4 text-lg text-cream/85">{s.lead}</p>
+    </div>
+  </div>
+
+  <div class="tri-root mt-10" data-tri data-step="0">
+    <div
+      class="tri-stage"
+      data-tri-stage
+      tabindex="0"
+      role="group"
+      aria-roledescription={lang === 'es' ? 'carta' : 'menu'}
+      aria-label={s.stage}
+    >
+      <div class="tri-floor" aria-hidden="true"></div>
+
+      <div class="tri-book" id="tri-book" data-tri-book lang="es">
+        <!-- Hoja izquierda: exterior = PORTADA · interior = Pescado / Carne -->
+        <div class="tri-leaf tri-leaf-l">
+          <article class="tri-face tri-out tri-portada" aria-label={s.portada}>
+            <p class="tp-welcome">{ext.portada.title}</p>
+            <div class="tp-logo">
+              <span class="tp-chef" set:html={chefSvg('white')} />
+              <span class="tp-name">Lo de<br />Juan y<br />Cristina</span>
+            </div>
+            <p class="tp-tag">{ext.portada.tagline}</p>
+          </article>
+          <article class="tri-face tri-in" aria-label={panelLabel(1)}>
+            <CartaSections sections={int.left} />
+          </article>
+        </div>
+
+        <!-- Hoja central: interior = Pastas / Salsas · exterior = CONTRATAPA -->
+        <div class="tri-leaf tri-leaf-c">
+          <article class="tri-face tri-in" aria-label={panelLabel(2)}>
+            <CartaSections sections={int.center} />
+          </article>
+          <article class="tri-face tri-out tri-contratapa" aria-label={s.contratapa}>
+            <div class="tc-info">
+              <p class="tc-name">{ext.contratapa.name}</p>
+              <p>{ext.contratapa.phones}</p>
+              {ext.contratapa.address.map((l) => <p>{l}</p>)}
+            </div>
+          </article>
+        </div>
+
+        <!-- Hoja derecha (solapa): interior = Postres / Bebidas · exterior = VINOS -->
+        <div class="tri-leaf tri-leaf-r">
+          <article class="tri-face tri-in" aria-label={panelLabel(3)}>
+            <CartaSections sections={int.right} />
+          </article>
+          <article class="tri-face tri-out" aria-label={ext.vinos.title}>
+            <CartaSections sections={[ext.vinos]} />
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <!-- Puntitos del modo lectura (celular, carta abierta) -->
+    <div class="tri-dots" data-tri-dots>
+      {[1, 2, 3].map((n) => (
+        <button type="button" class="tri-dot" data-tri-dot={n - 1} aria-label={panelLabel(n)} aria-current={n === 1 ? 'true' : undefined}>
+          <span aria-hidden="true"></span>
+        </button>
+      ))}
+      <span class="tri-count" data-tri-count aria-hidden="true">1/3</span>
+    </div>
+
+    <div class="container-x">
+      <p class="tri-hint mt-6 flex items-center justify-center gap-2 text-sm text-cream/80" aria-hidden="true">
+        <Icon name="rotate" class="size-4" /> {s.hint}
+      </p>
+      <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <button type="button" class="btn tri-btn-primary" data-tri-open aria-expanded="false" aria-controls="tri-book">
+          <Icon name="expand" /> {s.open}
+        </button>
+        <button type="button" class="btn tri-btn-ghost" data-tri-close aria-controls="tri-book" disabled>
+          <Icon name="close" /> {s.close}
+        </button>
+        <button type="button" class="btn tri-btn-ghost" data-tri-flip aria-controls="tri-book" data-label-back={s.back} data-label-front={s.front}>
+          <Icon name="rotate" /> <span data-tri-flip-label>{s.back}</span>
+        </button>
+      </div>
+      <p class="mt-6 text-center text-sm text-cream/75">{s.pricesNote}</p>
+      <p class="sr-only" aria-live="polite" data-tri-live
+        data-closed={s.stClosed} data-half={s.stHalf} data-open={s.stOpen} data-back={s.stBack}></p>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* Ángulos de las bisagras animables con transición */
+  @property --a1 { syntax: '<angle>'; inherits: true; initial-value: 180deg; }
+  @property --a2 { syntax: '<angle>'; inherits: true; initial-value: -180deg; }
+
+  @layer components {
+    /* ── Sección: mesa oscura con una luz cálida detrás de la carta ── */
+    .tri-section {
+      background-color: #1c1512;
+      background-image:
+        radial-gradient(ellipse 55% 45% at 50% 58%, rgb(255 214 168 / .16), transparent 70%),
+        radial-gradient(ellipse 90% 70% at 50% 60%, rgb(120 70 40 / .18), transparent 75%);
+      overflow-x: clip;
+    }
+    .tri-btn-primary { background: #8a2846; color: #fff; }
+    @media (hover: hover) { .tri-btn-primary:hover { background: #a02f52; } }
+    .tri-btn-ghost { border: 2px solid rgb(251 245 236 / .7); color: #fbf5ec; }
+    @media (hover: hover) { .tri-btn-ghost:not(:disabled):hover { background: rgb(251 245 236 / .12); } }
+    .tri-section .btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: none; }
+
+    /* ── Escenario 3D ── */
+    .tri-root { --W: 280px; --H: calc(var(--W) * 1.85); }
+    @media (min-width: 768px) { .tri-root { --W: 300px; } }
+    @media (min-width: 1024px) { .tri-root { --W: 320px; } }
+
+    .tri-stage {
+      position: relative; height: calc(var(--H) + 4rem);
+      display: flex; align-items: center; justify-content: center;
+      perspective: 2400px; perspective-origin: 50% 35%;
+      touch-action: pan-y; cursor: pointer; user-select: none; -webkit-user-select: none;
+      transition: opacity .25s ease;
+    }
+    .tri-stage:focus-visible { outline: 3px solid #ffd7a8; outline-offset: -6px; border-radius: 1rem; }
+    .tri-root.is-fading .tri-stage { opacity: 0; }
+
+    .tri-book {
+      --sc: 1; --tx: 16deg; --ty: -14deg; --tz: 2deg;
+      --a1: 180deg; --a2: -180deg;
+      position: relative; flex: none;
+      width: calc(var(--W) * 3); height: var(--H);
+      transform-style: preserve-3d;
+      transform: scale(var(--sc)) rotateX(var(--tx)) rotateY(var(--ty)) rotateZ(var(--tz));
+      transition:
+        transform .8s cubic-bezier(.45, .05, .25, 1),
+        --a1 .75s cubic-bezier(.6, .05, .3, 1),
+        --a2 .75s cubic-bezier(.6, .05, .3, 1);
+    }
+    .tri-book.is-dragging { transition: transform .8s cubic-bezier(.45, .05, .25, 1); }
+
+    .tri-leaf { position: absolute; top: 0; width: var(--W); height: 100%; transform-style: preserve-3d; }
+    .tri-leaf-l { left: 0; transform-origin: right center; transform: translateZ(2px) rotateY(var(--a1)); }
+    .tri-leaf-c { left: var(--W); }
+    .tri-leaf-r { left: calc(var(--W) * 2); transform-origin: left center; transform: translateZ(1px) rotateY(var(--a2)); }
+
+    /* Cada cara es un panel de papel */
+    .tri-face {
+      position: absolute; inset: 0; overflow: hidden;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      padding: 1.6em 1.25em; font-size: calc(var(--W) * .046); line-height: 1.3; color: #2b1a1e;
+      background-color: #f6efe2;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .25 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #faf5ec, #f2e9d9);
+      box-shadow: inset 0 0 0 1px rgb(90 60 30 / .12);
+    }
+    .tri-out { transform: rotateY(180deg); }
+    /* Sombreado en los dobleces mientras gira */
+    .tri-face::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+      background: linear-gradient(90deg, rgb(40 20 10 / .55), rgb(40 20 10 / .2));
+    }
+    @supports (opacity: calc(sin(30deg))) {
+      .tri-leaf-l .tri-face::after { opacity: calc(sin(var(--a1)) * .55); }
+      .tri-leaf-r .tri-face::after { opacity: calc(sin(var(--a2)) * -.55); }
+    }
+    /* Marca suave del doblez en los bordes interiores */
+    .tri-leaf-l .tri-in { box-shadow: inset -10px 0 14px -12px rgb(60 35 15 / .35), inset 0 0 0 1px rgb(90 60 30 / .12); }
+    .tri-leaf-r .tri-in { box-shadow: inset 10px 0 14px -12px rgb(60 35 15 / .35), inset 0 0 0 1px rgb(90 60 30 / .12); }
+
+    /* Sombra sobre la mesa */
+    .tri-floor {
+      position: absolute; left: 50%; bottom: 1.2rem; height: 2.6rem; width: var(--fw, var(--W));
+      transform: translateX(calc(-50% + var(--fx, 0px)));
+      background: radial-gradient(ellipse at center, rgb(0 0 0 / .7), transparent 70%);
+      filter: blur(10px);
+      transition: width .8s cubic-bezier(.45,.05,.25,1), transform .8s cubic-bezier(.45,.05,.25,1);
+    }
+
+    /* ── Contenido de los paneles ── */
+    .cs-block + .cs-block { margin-top: 1.5em; }
+    .cs-title { font-family: 'Patrick Hand', 'Comic Sans MS', cursive; font-size: 2em; line-height: 1; color: #8a2846; margin-bottom: .55em; }
+    .cs-list { display: grid; gap: .45em; }
+    .cs-item { display: flex; align-items: baseline; gap: .3em; font-weight: 700; font-size: .95em; }
+    .cs-name { min-width: 0; }
+    .cs-dots { flex: 1 1 1.2em; min-width: 1.2em; border-bottom: .14em dotted rgb(43 26 30 / .45); transform: translateY(-.25em); }
+    .cs-price { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .cs-text { font-weight: 700; font-size: .95em; }
+
+    .tri-portada { display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; padding: 2em 1em 2.4em; }
+    .tp-welcome { font-family: 'Patrick Hand', cursive; font-size: 3.1em; line-height: 1; color: #8a2846; }
+    .tp-logo {
+      display: flex; align-items: center; justify-content: center; gap: .4em;
+      width: 100%; aspect-ratio: 1; background: linear-gradient(160deg, #8a2846, #6e1d37); color: #fff; padding: 1em;
+      box-shadow: 0 1px 2px rgb(0 0 0 / .2);
+    }
+    .tp-chef svg { height: 6.5em; width: auto; }
+    .tp-name { font-family: var(--font-serif); font-size: 2.05em; line-height: 1.02; text-align: left; }
+    .tp-tag { font-family: 'Patrick Hand', cursive; font-size: 1.75em; color: #8a2846; }
+
+    .tri-contratapa { display: flex; align-items: flex-end; justify-content: center; text-align: center; padding-bottom: 3.2em; }
+    .tc-info { font-weight: 700; font-size: .95em; line-height: 1.7; }
+    .tc-name { font-size: 1.05em; }
+
+    /* ── Modo lectura (celular, carta abierta): carrusel con un panel por vez ── */
+    .tri-dots { display: none; }
+    .tri-root.is-reading .tri-stage { height: auto; display: block; perspective: none; touch-action: auto; cursor: auto; }
+    .tri-root.is-reading .tri-floor { display: none; }
+    .tri-root.is-reading .tri-book {
+      transform: none !important; transition: none;
+      width: auto; height: auto; display: flex; gap: .75rem;
+      overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+      padding: .25rem 7% 1rem; scrollbar-width: none;
+    }
+    .tri-root.is-reading .tri-book::-webkit-scrollbar { display: none; }
+    .tri-root.is-reading .tri-leaf { position: relative; left: auto; transform: none !important; flex: 0 0 86%; height: auto; scroll-snap-align: center; }
+    .tri-root.is-reading .tri-face { position: relative; inset: auto; transform: none; backface-visibility: visible; font-size: 16px; height: 100%; border-radius: 4px; box-shadow: 0 10px 30px -12px rgb(0 0 0 / .6); }
+    .tri-root.is-reading .tri-face::after { display: none; }
+    .tri-root.is-reading .tri-out { display: none; }
+    .tri-root.is-reading .cs-title { font-size: 1.9em; }
+    .tri-root.is-reading .cs-item, .tri-root.is-reading .cs-text { font-size: 1em; }
+    .tri-root.is-reading .tri-dots { display: flex; align-items: center; justify-content: center; gap: .25rem; margin-top: .25rem; }
+    .tri-root.is-reading .tri-hint { display: none; }
+    .tri-dot { display: grid; place-items: center; width: 2.25rem; height: 2.75rem; }
+    .tri-dot span { width: .6rem; height: .6rem; border-radius: 999px; background: rgb(251 245 236 / .35); transition: width .3s ease, background-color .3s ease; }
+    .tri-dot[aria-current='true'] span { width: 1.6rem; background: #fbf5ec; }
+    .tri-count { margin-left: .5rem; font-weight: 700; font-size: .9rem; color: #fbf5ec; font-variant-numeric: tabular-nums; }
+
+    /* Movimiento reducido: sin giros ni inclinación, solo fundidos (los maneja el JS) */
+    @media (prefers-reduced-motion: reduce) {
+      .tri-book { transition: none; }
+      .tri-floor, .tri-dot span { transition: none; }
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-tri]');
+  if (root) {
+    const stage = root.querySelector<HTMLElement>('[data-tri-stage]')!;
+    const book = root.querySelector<HTMLElement>('[data-tri-book]')!;
+    const leaves = [...book.querySelectorAll<HTMLElement>('.tri-leaf')];
+    const btnOpen = root.querySelector<HTMLButtonElement>('[data-tri-open]')!;
+    const btnClose = root.querySelector<HTMLButtonElement>('[data-tri-close]')!;
+    const btnFlip = root.querySelector<HTMLButtonElement>('[data-tri-flip]')!;
+    const flipLabel = root.querySelector<HTMLElement>('[data-tri-flip-label]')!;
+    const live = root.querySelector<HTMLElement>('[data-tri-live]')!;
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-tri-dot]')];
+    const count = root.querySelector<HTMLElement>('[data-tri-count]')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const mobile = matchMedia('(max-width: 767px)');
+    const STEP_MS = 750;
+
+    let step = 0;          // 0 cerrada · 1 portada abierta · 2 abierta
+    let flipped = false;   // mostrando la contratapa
+    let reading = false;   // modo lectura (celular)
+    let timers: number[] = [];
+    let interacted = false;
+    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+    const W = () => parseFloat(getComputedStyle(root).getPropertyValue('--W')) || 300;
+    const stageW = () => stage.clientWidth - 24;
+
+    function render() {
+      const w = W(), sw = stageW();
+      const scOpen = Math.min(1, sw / (w * 3));
+      const scClosed = Math.min(1, sw / (w * 1.15));
+      const sc = step === 0 ? scClosed : scOpen;
+      const r = reduce.matches;
+      const tilt = r ? [0, 0, 0] : step === 0 ? [16, -14, 2] : step === 1 ? [7, -5, 0] : [0, 0, 0];
+      book.style.setProperty('--sc', String(sc));
+      book.style.setProperty('--tx', `${tilt[0]}deg`);
+      book.style.setProperty('--ty', `${tilt[1] + (flipped ? 180 : 0)}deg`);
+      book.style.setProperty('--tz', `${tilt[2]}deg`);
+      book.style.setProperty('--a1', step >= 1 ? '0deg' : '180deg');
+      book.style.setProperty('--a2', step >= 2 ? '0deg' : '-180deg');
+      // sombra sobre la mesa según lo que ocupa la carta
+      const visible = step === 0 ? w : step === 1 ? w * 2 : w * 3;
+      stage.style.setProperty('--fw', `${visible * sc * 0.95}px`);
+      stage.style.setProperty('--fx', `${step === 1 ? -w * 0.5 * sc : 0}px`);
+
+      root.dataset.step = String(step);
+      btnOpen.setAttribute('aria-expanded', String(step === 2));
+      btnClose.disabled = step === 0 && !flipped;
+      flipLabel.textContent = flipped ? btnFlip.dataset.labelFront! : btnFlip.dataset.labelBack!;
+      live.textContent = flipped ? live.dataset.back! : step === 0 ? live.dataset.closed! : step === 1 ? live.dataset.half! : live.dataset.open!;
+    }
+
+    // Con movimiento reducido: fundido entre estados en lugar de giro
+    function go(fn: () => void) {
+      if (!reduce.matches) { fn(); render(); return; }
+      root.classList.add('is-fading');
+      later(() => { fn(); render(); root.classList.remove('is-fading'); }, 220);
+    }
+
+    function setReading(on: boolean, after?: () => void) {
+      if (on === reading) { after?.(); return; }
+      root.classList.add('is-fading');
+      later(() => {
+        reading = on;
+        root.classList.toggle('is-reading', on);
+        if (on) { book.scrollLeft = 0; updateDots(); }
+        requestAnimationFrame(() => root.classList.remove('is-fading'));
+        if (after) later(after, 260);
+      }, 250);
+    }
+    const maybeRead = () => { if (step === 2 && mobile.matches) later(() => setReading(true), reduce.matches ? 300 : STEP_MS + 50); };
+
+    function openFully() {
+      clearTimers(); interacted = true;
+      const run = () => {
+        if (step === 0) { go(() => { step = 1; }); later(() => go(() => { step = 2; }), reduce.matches ? 450 : STEP_MS); }
+        else if (step === 1) go(() => { step = 2; });
+        later(maybeRead, reduce.matches ? 500 : STEP_MS);
+      };
+      if (flipped) { go(() => { flipped = false; }); later(run, reduce.matches ? 300 : 800); } else run();
+    }
+    function closeFully(after?: () => void) {
+      clearTimers(); interacted = true;
+      setReading(false, () => {
+        if (step === 2) { go(() => { step = 1; }); later(() => { go(() => { step = 0; }); if (after) later(after, STEP_MS); }, reduce.matches ? 450 : STEP_MS); }
+        else if (step === 1) { go(() => { step = 0; }); if (after) later(after, STEP_MS); }
+        else after?.();
+      });
+    }
+    function advance() {
+      clearTimers(); interacted = true;
+      if (flipped) { go(() => { flipped = false; }); return; }
+      if (step < 2) go(() => { step += 1; });
+    }
+
+    btnOpen.addEventListener('click', openFully);
+    btnClose.addEventListener('click', () => (flipped ? go(() => { flipped = false; }) : closeFully()));
+    btnFlip.addEventListener('click', () => {
+      interacted = true;
+      if (step > 0) closeFully(() => go(() => { flipped = true; }));
+      else go(() => { flipped = !flipped; });
+    });
+
+    // ── Arrastre (Pointer Events: mouse y touch) ──
+    let down = false, dragging = false, startX = 0, startY = 0, startT = 0, mode: 'a1' | 'a2' | null = null, val = 0;
+    stage.addEventListener('pointerdown', (e) => {
+      if (reading || e.button !== 0) return;
+      down = true; dragging = false; startX = e.clientX; startY = e.clientY; startT = performance.now();
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!down || reduce.matches || flipped) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!dragging) {
+        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+        // qué bisagra se mueve según el paso y la dirección del gesto
+        mode = step === 0 && dx < 0 ? 'a1' : step === 1 && dx > 0 ? 'a2' : step === 1 && dx < 0 ? 'a1' : step === 2 && dx < 0 ? 'a2' : null;
+        if (!mode) return;
+        dragging = true; interacted = true; clearTimers();
+        stage.setPointerCapture(e.pointerId);
+        book.classList.add('is-dragging');
+      }
+      const span = W() * parseFloat(getComputedStyle(book).getPropertyValue('--sc') || '1');
+      const k = (dx / span) * 180;
+      if (mode === 'a1') val = step === 0 ? Math.max(0, Math.min(180, 180 + k)) : Math.max(0, Math.min(180, -k));
+      else val = step === 1 ? Math.max(-180, Math.min(0, -180 + k)) : Math.max(-180, Math.min(0, k));
+      book.style.setProperty(mode === 'a1' ? '--a1' : '--a2', `${val}deg`);
+    });
+    const release = (e: PointerEvent, cancelled = false) => {
+      if (!down) return;
+      down = false;
+      if (dragging) {
+        dragging = false;
+        book.classList.remove('is-dragging');
+        // al soltar se completa o vuelve, según cuánto se giró
+        if (mode === 'a1') step = step === 0 ? (val < 90 ? 1 : 0) : (val > 90 ? 0 : 1);
+        else if (mode === 'a2') step = step === 1 ? (val > -90 ? 2 : 1) : (val < -90 ? 1 : 2);
+        render();
+        if (step === 2) later(maybeRead, STEP_MS);
+        return;
+      }
+      // toque o click corto: siguiente paso
+      if (!cancelled && performance.now() - startT < 450 && Math.hypot(e.clientX - startX, e.clientY - startY) < 8) {
+        advance();
+        if (step === 2) later(maybeRead, STEP_MS);
+      }
+    };
+    stage.addEventListener('pointerup', (e) => release(e));
+    stage.addEventListener('pointercancel', (e) => release(e, true));
+
+    // ── Teclado ──
+    stage.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (flipped) advance(); else openFully(); }
+      if (e.key === 'Escape') { e.preventDefault(); if (flipped) go(() => { flipped = false; }); else closeFully(); }
+    });
+
+    // ── Modo lectura: puntitos ──
+    function updateDots() {
+      const i = Math.round(book.scrollLeft / Math.max(1, (book.scrollWidth - book.clientWidth) / 2));
+      const n = Math.max(0, Math.min(2, i));
+      dots.forEach((d, k) => (k === n ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
+      count.textContent = `${n + 1}/3`;
+    }
+    book.addEventListener('scroll', () => { if (reading) requestAnimationFrame(updateDots); }, { passive: true });
+    dots.forEach((d, i) => d.addEventListener('click', () => {
+      leaves[i].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+    }));
+
+    // Al cambiar de tamaño: recalcula escala y sale del modo lectura si ya no es celular
+    addEventListener('resize', () => {
+      if (reading && !mobile.matches) setReading(false);
+      else if (!reading && step === 2 && mobile.matches) setReading(true);
+      render();
+    });
+
+    // Se abre sola la primera vez que entra en pantalla (salvo movimiento reducido)
+    if (!reduce.matches && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          io.disconnect();
+          later(() => { if (!interacted && step === 0 && !flipped) openFully(); }, 700);
+        }
+      }, { threshold: 0.6 });
+      io.observe(stage);
+    }
+
+    // La primera medición (escala, sombra) se hace recién cuando la carta se acerca a la pantalla:
+    // así no se fuerza un layout de toda la página durante la carga. El estado inicial ya está en el CSS.
+    let measured = false;
+    const firstRender = () => { if (!measured) { measured = true; render(); } };
+    if ('IntersectionObserver' in window) {
+      const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); firstRender(); } }, { rootMargin: '600px 0px' });
+      near.observe(stage);
+    } else firstRender();
+    stage.addEventListener('focus', firstRender, { once: true });
+  }
+</script>

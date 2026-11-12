@@ -16,6 +16,8 @@ export default defineConfig({
   site: SITE_URL,
   output: 'static',
   trailingSlash: 'ignore',
+  // Sitio de una sola página: el CSS va dentro del HTML (un viaje de red menos antes del primer pintado)
+  build: { inlineStylesheets: 'always' },
   i18n: {
     locales: ['es', 'en'],
     defaultLocale: 'es',

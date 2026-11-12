@@ -23,9 +23,18 @@ const s = t(Astro.props.lang);
 </style>
 
 <script>
+  // Se oculta sobre el hero (ya tiene su botón) y sobre la carta (taparía los precios)
   const btn = document.querySelector<HTMLElement>('[data-wa-float]');
-  const hero = document.getElementById('hero-title')?.closest('section');
-  if (btn && hero) {
-    new IntersectionObserver(([e]) => btn.classList.toggle('is-hidden', e.isIntersecting), { threshold: 0.35 }).observe(hero);
+  const zones = [document.getElementById('hero-title')?.closest('section'), document.getElementById('carta')].filter(Boolean) as HTMLElement[];
+  if (btn && zones.length) {
+    const visible = new Set<Element>();
+    new IntersectionObserver((entries) => {
+      entries.forEach((e) => (e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)));
+      btn.classList.toggle('is-hidden', visible.size > 0);
+    }, { threshold: 0.35 }).observe(zones[0]);
+    if (zones[1]) new IntersectionObserver(([e]) => {
+      e.isIntersecting ? visible.add(e.target) : visible.delete(e.target);
+      btn.classList.toggle('is-hidden', visible.size > 0);
+    }, { rootMargin: '-30% 0px -30% 0px' }).observe(zones[1]);
   }
 </script>

@@ -61,9 +61,11 @@ Astro genera automáticamente las versiones AVIF/WebP en varios tamaños.
 
 En `src/config/site.ts`, dentro de `delivery`, reemplazá `[ZONAS DE ENVÍO]`, `[DÍAS Y HORARIOS DE ENTREGA]` y `[PEDIDO MÍNIMO / COSTO DE ENVÍO]` (en español y en inglés). Mientras sigan entre corchetes, el sitio muestra "Lo coordinamos por WhatsApp".
 
-### La carta en 3D
+### La carta (tríptico 3D)
 
-Las fotos de la carta (`fotos/carta1.png` exterior y `fotos/carta2.png` interior) se enderezan y se limpian con `node scripts/process-carta.mjs`. Si cambian la carta, reemplazá las fotos, ajustá las esquinas del papel en ese script si hace falta, volvé a correrlo y actualizá el texto en `src/data/carta.ts`.
+La carta está recreada en HTML/CSS (no usa fotos) a partir de `src/data/carta.ts`. Para cambiar un precio, cambiá el número; para agregar un plato, sumá una línea en la sección que corresponda. Lo que quedó por confirmar tiene un campo `verify` con [VERIFICAR] (no se muestra en el sitio).
+
+Cómo se arma, igual que la carta real: la hoja izquierda tiene la **portada** por fuera y Pescado/Carne por dentro; la central, la **contratapa** y Pastas/Salsas; la derecha (solapa), **Vinos** y Postres/Bebidas.
 
 ### Foto del hero
 
