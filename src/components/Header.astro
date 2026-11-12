@@ -1,0 +1,313 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { site, waLink, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang);
+const home = lang === 'es' ? '/' : '/en/';
+const links = [
+  ['#nosotros', s.nav.about],
+  ['#cocina', s.nav.kitchen],
+  ['#el-lugar', s.nav.place],
+  ['#eventos', s.nav.events],
+  ['#como-llegar', s.nav.directions],
+  ['#contacto', s.nav.contact],
+] as const;
+const wa = waLink(site.phones[0].whatsapp, s.contact.waMsg);
+---
+<header id="site-header" class="site-header fixed inset-x-0 top-0 z-50">
+  <div class="hdr-inner container-x flex items-center justify-between gap-3">
+    <a href={home} class="hdr-logo tap rounded-lg" aria-label={`${site.name} — ${s.nav.home}`}>
+      <Logo size="sm" />
+    </a>
+
+    <nav aria-label={lang === 'es' ? 'Principal' : 'Main'} class="hidden lg:block">
+      <ul class="flex items-center gap-1 text-[0.95rem] font-semibold">
+        {links.map(([href, label]) => (
+          <li><a href={href} class="nav-link relative rounded-full px-3 py-2">{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-1.5">
+      <button type="button" class="hdr-btn" data-theme-toggle aria-label={s.prefs.toggleTheme} title={s.prefs.toggleTheme}>
+        <span class="theme-icon-light"><Icon name="moon" /></span>
+        <span class="theme-icon-dark"><Icon name="sun" /></span>
+      </button>
+      <button type="button" class="hdr-btn" popovertarget="prefs" aria-label={`${lang.toUpperCase()} · ${s.prefs.open}`} title={s.prefs.title}>
+        <Icon name="type" />
+        <span class="hidden text-sm font-bold sm:inline">{lang.toUpperCase()}</span>
+      </button>
+      <a href={wa} target="_blank" rel="noopener" class="btn btn-wa hidden !min-h-10 !px-4 !py-2 text-sm xl:inline-flex">
+        <Icon name="whatsapp" /> WhatsApp
+      </a>
+      <button type="button" class="hdr-btn lg:hidden" popovertarget="mobile-nav" aria-label={s.nav.menu}>
+        <Icon name="menu" class="size-6" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Panel de preferencias -->
+<div id="prefs" popover class="prefs-panel card m-0 w-[min(22rem,calc(100vw-2rem))] p-5 text-ink" aria-label={s.prefs.title}>
+  <div class="mb-4 flex items-center justify-between">
+    <p class="font-serif text-xl font-semibold">{s.prefs.title}</p>
+    <button type="button" popovertarget="prefs" popovertargetaction="hide" class="grid size-10 place-items-center rounded-full hover:bg-bg-alt" aria-label={s.nav.close}>
+      <Icon name="close" />
+    </button>
+  </div>
+
+  <fieldset class="mb-5">
+    <legend class="mb-2 text-sm font-bold text-ink-soft">{s.prefs.theme}</legend>
+    <div class="seg grid grid-cols-3 gap-1 rounded-2xl bg-bg-alt p-1">
+      {([['light', s.prefs.light, 'sun'], ['dark', s.prefs.dark, 'moon'], ['system', s.prefs.system, 'auto']] as const).map(([v, label, icon]) => (
+        <button type="button" data-theme-set={v} aria-pressed="false" class="seg-btn">
+          <Icon name={icon} class="size-4" /> {label}
+        </button>
+      ))}
+    </div>
+  </fieldset>
+
+  <fieldset class="mb-5">
+    <legend class="mb-2 text-sm font-bold text-ink-soft">{s.prefs.size}</legend>
+    <div class="flex items-center gap-2 rounded-2xl bg-bg-alt p-1">
+      <button type="button" data-size-step="-1" class="seg-btn !flex-none !px-4" aria-label={s.prefs.smaller}><span class="text-sm font-bold">A−</span></button>
+      <div class="flex flex-1 justify-center gap-1.5" aria-hidden="true">
+        <span data-size-dot="0" class="size-dot"></span><span data-size-dot="1" class="size-dot"></span><span data-size-dot="2" class="size-dot"></span>
+      </div>
+      <button type="button" data-size-step="1" class="seg-btn !flex-none !px-4" aria-label={s.prefs.bigger}><span class="text-lg font-bold">A+</span></button>
+    </div>
+    <p class="sr-only" aria-live="polite" data-size-live></p>
+  </fieldset>
+
+  <fieldset>
+    <legend class="mb-2 text-sm font-bold text-ink-soft">{s.prefs.lang}</legend>
+    <div class="grid grid-cols-2 gap-1 rounded-2xl bg-bg-alt p-1">
+      <a href="/" hreflang="es" lang="es" data-lang-link class="seg-btn" aria-current={lang === 'es' ? 'true' : undefined}><span class="lang-tag">ES</span> Español</a>
+      <a href="/en/" hreflang="en" lang="en" data-lang-link class="seg-btn" aria-current={lang === 'en' ? 'true' : undefined}><span class="lang-tag">EN</span> English</a>
+    </div>
+  </fieldset>
+</div>
+
+<!-- Menú móvil -->
+<div id="mobile-nav" popover class="mobile-nav m-0 h-dvh max-h-none w-full max-w-none bg-wine-deep p-0 text-cream on-dark">
+  <div class="container-x flex h-16 items-center justify-between">
+    <Logo size="sm" variant="white" />
+    <button type="button" popovertarget="mobile-nav" popovertargetaction="hide" class="tap grid size-12 place-items-center rounded-full hover:bg-white/10" aria-label={s.nav.close}>
+      <Icon name="close" class="size-7" />
+    </button>
+  </div>
+  <nav aria-label={lang === 'es' ? 'Menú móvil' : 'Mobile menu'} class="container-x mt-6">
+    <ul class="space-y-1">
+      {links.map(([href, label], i) => (
+        <li class="mnav-item" style={`--i:${i}`}>
+          <a href={href} data-close-nav class="mnav-link flex items-baseline gap-4 rounded-2xl px-2 py-3 font-serif text-3xl">
+            <span class="font-sans text-sm font-bold text-white/60">0{i + 1}</span>{label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="mnav-item mt-8 grid gap-3" style={`--i:${links.length}`}>
+      <a href={wa} target="_blank" rel="noopener" class="btn btn-wa w-full"><Icon name="whatsapp" /> {s.hero.whatsapp}</a>
+      <a href={`tel:${site.phones[0].intl}`} class="btn btn-ghost w-full"><Icon name="phone" /> {site.phones[0].display}</a>
+    </div>
+  </nav>
+</div>
+
+<style>
+  @layer components {
+  /*
+   * Header: el fondo vive en una capa (::before) que aparece con un fundido,
+   * así no hay salto. El header es fixed: cambiar su altura no mueve el contenido.
+   */
+  .site-header {
+    --ease: cubic-bezier(.4, 0, .2, 1);
+    color: #fff;
+    transition: color .3s var(--ease);
+  }
+  .site-header::before {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: 0 1px 0 var(--line), 0 8px 24px -16px rgb(var(--shadow) / .35);
+    opacity: 0;
+    transition: opacity .3s var(--ease);
+  }
+  .hdr-inner { height: 4.5rem; transition: height .3s var(--ease); }
+  @media (min-width: 1024px) { .hdr-inner { height: 5.5rem; } }
+  .site-header.is-solid { color: var(--ink); }
+  .site-header.is-solid::before { opacity: 1; }
+  .site-header.is-solid .hdr-inner { height: 4rem; }
+  @media (min-width: 1024px) { .site-header.is-solid .hdr-inner { height: 4.5rem; } }
+  .site-header:not(.is-solid) :global(:focus-visible) { outline-color: #ffd7a8; }
+
+  /* Logo: oculto mientras se ve el logo grande del hero */
+  .hdr-logo {
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .35s var(--ease), transform .35s var(--ease), visibility 0s linear .35s;
+  }
+  .site-header.hero-gone .hdr-logo {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .35s var(--ease), transform .35s var(--ease), visibility 0s;
+  }
+
+  /* Links del menú: subrayado que crece desde el centro */
+  .nav-link { transition: color .25s var(--ease); }
+  .nav-link::after {
+    content: ''; position: absolute; left: .75rem; right: .75rem; bottom: .3rem; height: 2px;
+    border-radius: 2px; background: currentColor;
+    transform: scaleX(0); transform-origin: center; transition: transform .3s var(--ease);
+  }
+  .nav-link[aria-current='true']::after { transform: scaleX(1); }
+  .site-header.is-solid .nav-link[aria-current='true'] { color: var(--brand); }
+  @media (hover: hover) {
+    .nav-link:hover::after { transform: scaleX(1); }
+    .site-header.is-solid .nav-link:hover { color: var(--brand); }
+  }
+
+  .hdr-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    min-height: 2.75rem; min-width: 2.75rem; justify-content: center;
+    padding: 0 0.6rem; border-radius: 999px;
+    transition: background-color .2s ease, transform .2s ease;
+  }
+  @media (hover: hover) { .hdr-btn:hover { background: color-mix(in srgb, currentColor 12%, transparent); } }
+  .hdr-btn:active { transform: scale(.94); }
+
+  .theme-icon-dark { display: none; }
+  :global([data-theme='dark']) .theme-icon-dark { display: inline; }
+  :global([data-theme='dark']) .theme-icon-light { display: none; }
+
+  /* Paneles (preferencias y menú móvil): abren y cierran con animación */
+  .prefs-panel, .mobile-nav {
+    transition: opacity .3s cubic-bezier(.4,0,.2,1), transform .3s cubic-bezier(.4,0,.2,1),
+      overlay .3s allow-discrete, display .3s allow-discrete;
+    opacity: 0;
+  }
+  .prefs-panel:popover-open, .mobile-nav:popover-open { opacity: 1; transform: none; }
+  .prefs-panel { position: fixed; inset: auto; top: 4.5rem; right: 1rem; transform: translateY(-8px) scale(.97); transform-origin: top right; }
+  @media (min-width: 1024px) { .prefs-panel { top: 5.25rem; } }
+  @starting-style {
+    .prefs-panel:popover-open { opacity: 0; transform: translateY(-8px) scale(.97); }
+    .mobile-nav:popover-open { opacity: 0; transform: translateY(-16px); }
+  }
+
+  .seg-btn {
+    display: flex; flex: 1; align-items: center; justify-content: center; gap: .35rem;
+    min-height: 2.75rem; padding: .4rem .5rem; border-radius: .85rem;
+    font-size: .9rem; font-weight: 700; color: var(--ink-soft); transition: background-color .25s ease, color .25s ease, transform .2s ease, box-shadow .25s ease;
+  }
+  @media (hover: hover) { .seg-btn:hover { color: var(--ink); } }
+  .seg-btn:active { transform: scale(.96); }
+  .seg-btn:disabled { opacity: .4; }
+  .seg-btn[aria-pressed='true'], .seg-btn[aria-current='true'] {
+    background: var(--surface); color: var(--brand); box-shadow: 0 1px 3px rgb(0 0 0 / .12);
+  }
+  .lang-tag { font-size: .7rem; padding: .1rem .35rem; border-radius: .35rem; border: 1.5px solid currentColor; letter-spacing: .05em; }
+  .size-dot { width: .55rem; height: .55rem; border-radius: 999px; background: var(--line); transition: background-color .2s, transform .2s; }
+  .size-dot.on { background: var(--brand); transform: scale(1.25); }
+
+  .mobile-nav { inset: 0; transform: translateY(-16px); }
+  /* Ítems del menú móvil: entran escalonados */
+  .mnav-item { opacity: 0; transform: translateY(10px); transition: opacity .35s ease, transform .35s ease; }
+  .mobile-nav:popover-open .mnav-item { opacity: 1; transform: none; transition-delay: calc(60ms + var(--i) * 40ms); }
+  @starting-style { .mobile-nav:popover-open .mnav-item { opacity: 0; transform: translateY(10px); } }
+  .mnav-link { transition: background-color .2s ease, transform .2s ease, padding-left .25s ease; }
+  @media (hover: hover) { .mnav-link:hover { background: rgb(255 255 255 / .1); padding-left: 1rem; } }
+  .mnav-link:active { transform: scale(.97); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header, .site-header::before, .hdr-inner, .hdr-logo, .prefs-panel, .mobile-nav, .mnav-item { transition: none !important; }
+    .prefs-panel, .mobile-nav, .mnav-item, .hdr-logo { transform: none !important; }
+  }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const store = {
+    get(k: string) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* sin storage */ } },
+  };
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+
+  // ── Tema ──
+  function applyTheme(pref: string) {
+    const dark = pref === 'dark' || (pref === 'system' && mq.matches);
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.dataset.themePref = pref;
+    store.set('ljc-theme', pref);
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-set]').forEach((b) =>
+      b.setAttribute('aria-pressed', String(b.dataset.themeSet === pref)));
+  }
+  applyTheme(root.dataset.themePref || 'system');
+  mq.addEventListener('change', () => { if (root.dataset.themePref === 'system') applyTheme('system'); });
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-set]').forEach((b) =>
+    b.addEventListener('click', () => applyTheme(b.dataset.themeSet!)));
+  document.querySelector('[data-theme-toggle]')?.addEventListener('click', () =>
+    applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+
+  // ── Tamaño de letra ──
+  const sizes = ['100%', '112,5%', '125%'];
+  function applySize(n: number) {
+    n = Math.max(0, Math.min(2, n));
+    if (n) root.dataset.size = String(n); else delete root.dataset.size;
+    store.set('ljc-size', String(n));
+    document.querySelectorAll('[data-size-dot]').forEach((d) =>
+      d.classList.toggle('on', Number((d as HTMLElement).dataset.sizeDot) <= n));
+    const live = document.querySelector('[data-size-live]');
+    if (live) live.textContent = sizes[n];
+    document.querySelector<HTMLButtonElement>('[data-size-step="-1"]')!.disabled = n === 0;
+    document.querySelector<HTMLButtonElement>('[data-size-step="1"]')!.disabled = n === 2;
+  }
+  applySize(Number(root.dataset.size || 0));
+  document.querySelectorAll<HTMLButtonElement>('[data-size-step]').forEach((b) =>
+    b.addEventListener('click', () => applySize(Number(root.dataset.size || 0) + Number(b.dataset.sizeStep))));
+
+  // Idioma: conservar la sección actual al cambiar
+  document.querySelectorAll<HTMLAnchorElement>('[data-lang-link]').forEach((a) =>
+    a.addEventListener('click', () => { if (location.hash) a.href = a.getAttribute('href')!.split('#')[0] + location.hash; }));
+
+  // ── Header sólido al bajar ──
+  const header = document.getElementById('site-header')!;
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { header.classList.toggle('is-solid', scrollY > 24); ticking = false; });
+  };
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+
+  // Logo del header: aparece cuando el hero (con su logo grande) sale de pantalla
+  const hero = document.getElementById('inicio');
+  if (hero) {
+    new IntersectionObserver(([e]) => header.classList.toggle('hero-gone', !e.isIntersecting),
+      { rootMargin: '-80px 0px 0px 0px' }).observe(hero);
+  } else header.classList.add('hero-gone');
+
+  // ── Menú móvil: cerrar al elegir sección ──
+  const nav = document.getElementById('mobile-nav') as HTMLElement & { hidePopover(): void };
+  document.querySelectorAll('[data-close-nav]').forEach((a) => a.addEventListener('click', () => nav.hidePopover()));
+
+  // ── Sección activa en el nav ──
+  const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.nav-link')];
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      navLinks.forEach((l) => l.setAttribute('aria-current', String(l.hash === `#${e.target.id}`)));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  navLinks.forEach((l) => { const el = document.querySelector(l.hash); if (el) io.observe(el); });
+  if (hero) io.observe(hero); // arriba de todo: ningún link marcado
+
+  // ── Aparición suave ──
+  const rio = new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('is-visible'); rio.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach((el) => rio.observe(el));
+</script>

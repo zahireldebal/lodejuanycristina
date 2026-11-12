@@ -1,0 +1,42 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { site, waLink, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang);
+const year = new Date().getFullYear();
+---
+<footer class="on-dark bg-wine-deep pb-28 pt-16 text-cream sm:pb-12">
+  <div class="container-x grid gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
+    <div>
+      <Logo size="md" variant="white" />
+      <p class="mt-4 max-w-xs font-serif italic text-cream/85">{site.slogans[lang].slice(2).join(' · ')}</p>
+    </div>
+    <div>
+      <h2 class="font-sans text-sm font-bold uppercase tracking-wider text-cream/70">{s.directions.address}</h2>
+      <address class="mt-3 not-italic leading-relaxed">
+        {site.address.street}<br />{site.address.locality}, {site.address.region}<br />{site.address.countryName[lang]}
+      </address>
+      <a href={site.googleMaps.link} target="_blank" rel="noopener" class="tap mt-3 inline-flex items-center gap-2 font-semibold underline underline-offset-4 hover:text-white">
+        <Icon name="pin" class="size-4" />{s.directions.openMaps}
+      </a>
+    </div>
+    <div>
+      <h2 class="font-sans text-sm font-bold uppercase tracking-wider text-cream/70">{s.contact.kicker}</h2>
+      <ul class="mt-3 space-y-2">
+        {site.phones.map((p) => (
+          <li><a href={waLink(p.whatsapp, s.contact.waMsg)} target="_blank" rel="noopener" class="tap inline-flex items-center gap-2 hover:text-white"><Icon name="whatsapp" class="size-4" />{p.display}</a></li>
+        ))}
+        <li><a href={site.social.instagram.url} target="_blank" rel="noopener" class="tap inline-flex items-center gap-2 hover:text-white"><Icon name="instagram" class="size-4" />{site.social.instagram.handle}</a></li>
+        <li><a href={site.social.facebook.url} target="_blank" rel="noopener" class="tap inline-flex items-center gap-2 hover:text-white"><Icon name="facebook" class="size-4" />{site.social.facebook.handle}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container-x mt-12 flex flex-col gap-2 border-t border-white/15 pt-6 text-sm text-cream/75 sm:flex-row sm:justify-between">
+    <p>© {year} {site.name}. {s.footer.rights}</p>
+    <p>{s.footer.made}</p>
+  </div>
+</footer>

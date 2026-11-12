@@ -1,0 +1,27 @@
+---
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import About from './About.astro';
+import Kitchen from './Kitchen.astro';
+import Gallery from './Gallery.astro';
+import Events from './Events.astro';
+import Directions from './Directions.astro';
+import Contact from './Contact.astro';
+import Footer from './Footer.astro';
+import WhatsAppFloat from './WhatsAppFloat.astro';
+import type { Lang } from '../config/site';
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+---
+  <Header lang={lang} />
+  <main id="contenido" tabindex="-1">
+    <Hero lang={lang} />
+    <About lang={lang} />
+    <Kitchen lang={lang} />
+    <Gallery lang={lang} />
+    <Events lang={lang} />
+    <Directions lang={lang} />
+    <Contact lang={lang} />
+  </main>
+  <Footer lang={lang} />
+  <WhatsAppFloat lang={lang} />

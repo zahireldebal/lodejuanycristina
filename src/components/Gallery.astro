@@ -1,0 +1,108 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Icon from './Icon.astro';
+import { gallery } from '../data/gallery';
+import type { Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).place;
+
+// Versión grande para el lightbox
+const large = await Promise.all(gallery.map((g) => getImage({ src: g.src, width: 1400, format: 'webp', quality: 80 })));
+const spanCls = {
+  tall: 'row-span-2',
+  wide: 'col-span-2',
+  big: 'col-span-2 lg:row-span-2',
+  pano: 'col-span-2 lg:col-span-4',
+  normal: '',
+};
+---
+<section id="el-lugar" class="py-20 sm:py-28" aria-labelledby="place-title">
+  <div class="container-x">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="kicker justify-center">{s.kicker}</p>
+      <h2 id="place-title" class="section-title">{s.title}</h2>
+      <p class="mt-5 text-lg text-ink-soft">{s.lead}</p>
+    </div>
+
+    <ul class="mt-12 grid auto-rows-[11rem] grid-flow-dense grid-cols-2 gap-3 sm:auto-rows-[14rem] sm:gap-4 lg:grid-cols-4 lg:auto-rows-[15rem]" role="list">
+      {gallery.map((g, i) => (
+        <li class:list={['reveal', spanCls[g.span ?? 'normal']]}>
+          <button
+            type="button"
+            class="lift zoom group relative block h-full w-full overflow-hidden rounded-2xl"
+            data-lightbox-index={i}
+            data-full={large[i].src}
+            data-alt={g.alt[lang]}
+          >
+            <Image src={g.src} alt={g.alt[lang]} widths={[360, 560, 800]} sizes="(min-width: 1024px) 40vw, 80vw"
+              class:list={["h-full w-full object-cover", g.span === "pano" && "object-[50%_72%]"]} />
+            <span class="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-black/45 text-white opacity-90 backdrop-blur transition duration-300 group-hover:scale-110 group-hover:bg-wine" aria-hidden="true">
+              <Icon name="expand" class="size-4" />
+            </span>
+            <span class="sr-only">{s.open}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <dialog class="lightbox m-auto h-full max-h-none w-full max-w-none bg-transparent p-0 text-white on-dark" aria-label={s.title}>
+    <div class="flex h-full flex-col items-center justify-center gap-3 p-3 sm:p-8">
+      <div class="flex w-full max-w-6xl items-center justify-between">
+        <p class="text-sm font-semibold text-white/80" data-lb-count aria-live="polite"></p>
+        <button type="button" data-lb-close class="tap grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label={s.close}>
+          <Icon name="close" class="size-6" />
+        </button>
+      </div>
+      <figure class="relative flex min-h-0 w-full max-w-6xl flex-1 flex-col items-center justify-center">
+        <img data-lb-img alt="" class="max-h-full max-w-full rounded-xl object-contain shadow-2xl" />
+        <figcaption data-lb-caption class="mt-3 max-w-3xl text-center text-sm text-white/85"></figcaption>
+      </figure>
+      <div class="flex gap-3">
+        <button type="button" data-lb-prev class="tap grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label={s.prev}><Icon name="left" class="size-6" /></button>
+        <button type="button" data-lb-next class="tap grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label={s.next}><Icon name="right" class="size-6" /></button>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('dialog.lightbox')!;
+  const items = [...document.querySelectorAll<HTMLButtonElement>('[data-lightbox-index]')];
+  const img = dlg.querySelector<HTMLImageElement>('[data-lb-img]')!;
+  const cap = dlg.querySelector('[data-lb-caption]')!;
+  const count = dlg.querySelector('[data-lb-count]')!;
+  const sep = document.documentElement.lang.startsWith('es') ? 'de' : 'of';
+  let cur = 0;
+  let opener: HTMLElement | null = null;
+
+  function show(i: number) {
+    cur = (i + items.length) % items.length;
+    const b = items[cur];
+    img.src = b.dataset.full!;
+    img.alt = b.dataset.alt!;
+    cap.textContent = b.dataset.alt!;
+    count.textContent = `${cur + 1} ${sep} ${items.length}`;
+  }
+  items.forEach((b, i) => b.addEventListener('click', () => { opener = b; show(i); dlg.showModal(); }));
+  dlg.querySelector('[data-lb-close]')!.addEventListener('click', () => dlg.close());
+  dlg.querySelector('[data-lb-prev]')!.addEventListener('click', () => show(cur - 1));
+  dlg.querySelector('[data-lb-next]')!.addEventListener('click', () => show(cur + 1));
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') show(cur - 1);
+    if (e.key === 'ArrowRight') show(cur + 1);
+  });
+  // Cerrar al tocar fuera de la foto
+  dlg.addEventListener('click', (e) => { if (e.target === dlg || (e.target as HTMLElement).tagName === 'FIGURE') dlg.close(); });
+  dlg.addEventListener('close', () => opener?.focus());
+  // Swipe en mobile
+  let x0 = 0;
+  dlg.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  dlg.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+  });
+</script>

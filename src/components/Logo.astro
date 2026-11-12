@@ -1,0 +1,14 @@
+---
+import { chefSvg } from './chef-svg.mjs';
+interface Props { variant?: 'color' | 'white'; class?: string; size?: 'sm' | 'md' | 'lg'; }
+const { variant = 'color', class: cls = '', size = 'md' } = Astro.props;
+const chefH = { sm: 'h-11', md: 'h-14', lg: 'h-28 sm:h-36' }[size];
+const textSize = { sm: 'text-[0.95rem]', md: 'text-lg', lg: 'text-[2.1rem] sm:text-5xl' }[size];
+const color = variant === 'white' ? 'text-white' : 'text-brand';
+---
+<span class:list={['inline-flex items-center gap-2', cls]}>
+  <span class:list={['shrink-0', chefH, '[&>svg]:h-full [&>svg]:w-auto']} set:html={chefSvg(variant)} />
+  <span class:list={['font-serif font-medium leading-[1.02] tracking-tight', textSize, color]}>
+    Lo de<br />Juan y<br />Cristina
+  </span>
+</span>

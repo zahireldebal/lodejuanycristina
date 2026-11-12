@@ -1,0 +1,48 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import tormenta from '../assets/images/fachada-cielo-tormenta.jpg';
+import carta from '../assets/images/entrada-y-carta-bienvenidos.jpg';
+import type { Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).about;
+const icons = ['wheat', 'heart', 'leaf', 'calendar'] as const;
+const cartaAlt = lang === 'es'
+  ? 'Carta de bienvenida con el logo del chef y la frase "Siempre una buena excusa", junto a la entrada de pan casero'
+  : 'Welcome menu with the chef logo and the phrase "Siempre una buena excusa", next to the homemade bread starter';
+---
+<section id="nosotros" class="py-20 sm:py-28" aria-labelledby="about-title">
+  <div class="container-x grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <div class="reveal">
+      <p class="kicker">{s.kicker}</p>
+      <h2 id="about-title" class="section-title">{s.title}</h2>
+      <div class="mt-6 space-y-4 text-lg text-ink-soft">
+        <p>{s.p1}</p>
+        <p>{s.p2}</p>
+        <p class="font-serif text-xl italic text-brand">{s.p3}</p>
+      </div>
+      <ul class="mt-8 grid grid-cols-2 gap-3">
+        {s.features.map((f, i) => (
+          <li class="card flex flex-col gap-1 p-4">
+            <span class="mb-1 grid size-10 place-items-center rounded-full bg-bg-alt text-brand"><Icon name={icons[i]} /></span>
+            <strong class="font-serif text-lg leading-snug">{f.title}</strong>
+            <span class="text-sm text-ink-soft">{f.text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="reveal relative mx-auto w-full max-w-md lg:max-w-none">
+      <Image src={tormenta} alt={s.imgAlt} widths={[480, 720, 960]} sizes="(min-width: 1024px) 34vw, 85vw"
+        class="arch aspect-[4/5] w-[85%] object-cover object-[35%_50%] shadow-2xl" />
+      <Image src={carta} alt={cartaAlt} widths={[320, 480]} sizes="(min-width: 1024px) 18vw, 45vw"
+        class="arch-sm absolute -bottom-8 right-0 aspect-[3/4] w-[48%] border-[6px] border-bg object-cover object-bottom shadow-xl" />
+      <span class="absolute -left-2 top-6 rotate-[-8deg] rounded-full bg-[#a8232c] px-4 py-2 font-serif text-sm italic text-white shadow-lg sm:text-base">
+        {lang === 'es' ? '¡Todo casero!' : 'All homemade!'}
+      </span>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,64 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import cartel from '../assets/images/cartel-ruta-son-bienvenidos.jpg';
+import { site, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).directions;
+const nt = t(lang).newTab;
+---
+<section id="como-llegar" class="bg-bg-alt py-20 sm:py-28" aria-labelledby="dir-title">
+  <div class="container-x">
+    <div class="reveal max-w-2xl">
+      <p class="kicker">{s.kicker}</p>
+      <h2 id="dir-title" class="section-title">{s.title}</h2>
+    </div>
+
+    <div class="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+      <div class="reveal flex flex-col gap-6">
+        <ol class="relative space-y-6 border-l-2 border-dashed border-brand/40 pl-8">
+          {s.steps.map((step, i) => (
+            <li class="relative">
+              <span class="absolute -left-[3.05rem] grid size-9 place-items-center rounded-full bg-brand font-serif text-lg font-bold text-brand-ink">{i + 1}</span>
+              <p class="pt-1 text-lg">{step}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div class="card flex items-center gap-4 p-4">
+          <Image src={cartel} alt={s.signAlt} widths={[200, 320]} sizes="8rem"
+            class="arch-sm aspect-[3/4] w-24 shrink-0 object-cover sm:w-28" />
+          <div>
+            <p class="font-serif text-xl font-semibold">{s.signs}</p>
+            <p class="mt-1 text-ink-soft">{site.address.street} · {site.address.locality}</p>
+          </div>
+        </div>
+
+        <address class="not-italic">
+          <span class="block text-sm font-bold uppercase tracking-wider text-ink-soft">{s.address}</span>
+          <span class="mt-1 block text-lg">{site.address.street}, {site.address.locality}<br />{site.address.region} ({site.address.city}), {site.address.countryName[lang]}</span>
+        </address>
+
+        <a href={site.googleMaps.link} target="_blank" rel="noopener" class="btn btn-brand self-start">
+          <Icon name="pin" /> {s.openMaps} <span class="sr-only">{nt}</span>
+        </a>
+      </div>
+
+      <div class="reveal flex flex-col">
+        <div class="card flex-1 overflow-hidden p-0">
+          <iframe
+            src={site.googleMaps.embed}
+            title={s.mapTitle}
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            class="block aspect-[4/3] w-full border-0 lg:aspect-auto lg:h-full lg:min-h-[32rem]"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

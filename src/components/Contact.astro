@@ -1,0 +1,67 @@
+---
+import Icon from './Icon.astro';
+import { site, waLink, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).contact;
+const nt = t(lang).newTab;
+---
+<section id="contacto" class="py-20 sm:py-28" aria-labelledby="contact-title">
+  <div class="container-x">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="kicker justify-center">{s.kicker}</p>
+      <h2 id="contact-title" class="section-title">{s.title}</h2>
+      <p class="mt-5 text-lg text-ink-soft">{s.lead}</p>
+    </div>
+
+    <div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Teléfonos y WhatsApp -->
+      {site.phones.map((p) => (
+        <div class="reveal card flex flex-col p-6">
+          <span class="text-sm font-bold uppercase tracking-wider text-ink-soft">{s.phones}</span>
+          <a href={`tel:${p.intl}`} class="tap mt-2 inline-flex items-center gap-3 self-start rounded-lg font-serif text-3xl font-semibold text-ink hover:text-brand">
+            <Icon name="phone" class="size-6 text-brand" />
+            <span><span class="sr-only">{s.call} </span>{p.display}</span>
+          </a>
+          <div class="mt-6 grid grid-cols-2 gap-2">
+            <a href={`tel:${p.intl}`} class="btn btn-outline !px-3 text-sm"><Icon name="phone" class="size-4" />{lang === 'es' ? 'Llamar' : 'Call'}</a>
+            <a href={waLink(p.whatsapp, s.waMsg)} target="_blank" rel="noopener" class="btn btn-wa !px-3 text-sm">
+              <Icon name="whatsapp" class="size-4" />{s.whatsapp}<span class="sr-only"> {p.display} {nt}</span>
+            </a>
+          </div>
+        </div>
+      ))}
+
+      <!-- Horarios -->
+      <div class="reveal card flex flex-col p-6 md:col-span-2 lg:col-span-1">
+        <span class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-ink-soft"><Icon name="clock" class="size-4" />{s.hours}</span>
+        <p class="mt-2 font-serif text-2xl font-semibold text-brand">{s.everyDay}</p>
+        {site.hours.length ? (
+          <dl class="mt-4 space-y-2">
+            {site.hours.map((h) => (
+              <div class="flex justify-between gap-4 border-b border-dashed border-line pb-2">
+                <dt class="font-semibold">{h.label[lang]}</dt>
+                <dd class="tabular-nums text-ink-soft">{h.open} – {h.close}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p class="mt-2 text-ink-soft">{s.hoursPending}</p>
+        )}
+        <div class="mt-auto pt-6">
+          <span class="text-sm font-bold uppercase tracking-wider text-ink-soft">{s.follow}</span>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <a href={site.social.instagram.url} target="_blank" rel="noopener" class="btn btn-outline !min-h-11 !px-4 text-sm">
+              <Icon name="instagram" class="size-4" />{site.social.instagram.handle}<span class="sr-only"> Instagram {nt}</span>
+            </a>
+            <a href={site.social.facebook.url} target="_blank" rel="noopener" class="btn btn-outline !min-h-11 !px-4 text-sm">
+              <Icon name="facebook" class="size-4" />{site.social.facebook.handle}<span class="sr-only"> Facebook {nt}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

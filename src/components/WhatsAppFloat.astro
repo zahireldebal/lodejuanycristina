@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { site, waLink, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+interface Props { lang: Lang; }
+const s = t(Astro.props.lang);
+---
+<a
+  href={waLink(site.phones[0].whatsapp, s.contact.waMsg)}
+  target="_blank"
+  rel="noopener"
+  data-wa-float
+  class="wa-float fixed bottom-4 right-4 z-40 grid size-16 place-items-center rounded-full bg-wa text-white shadow-xl shadow-black/30 transition duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-2xl active:scale-95 active:duration-75 sm:hidden"
+  aria-label={`${s.float} ${s.newTab}`}
+>
+  <Icon name="whatsapp" class="size-8" />
+  <span class="absolute inset-0 -z-10 animate-ping rounded-full bg-wa opacity-30 motion-reduce:hidden" aria-hidden="true"></span>
+</a>
+
+<style>
+  /* Oculto mientras se ve el hero (que ya tiene su propio botón de WhatsApp) */
+  :global(.js) .wa-float.is-hidden { opacity: 0; transform: translateY(1.5rem) scale(.8); pointer-events: none; visibility: hidden; }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLElement>('[data-wa-float]');
+  const hero = document.getElementById('hero-title')?.closest('section');
+  if (btn && hero) {
+    new IntersectionObserver(([e]) => btn.classList.toggle('is-hidden', e.isIntersecting), { threshold: 0.35 }).observe(hero);
+  }
+</script>

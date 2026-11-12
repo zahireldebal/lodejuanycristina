@@ -1,0 +1,188 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/lora';
+@import '@fontsource-variable/nunito-sans';
+
+/* Modo oscuro controlado por data-theme en <html> */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ── Tokens de color (cambian con el tema) ─────────────────── */
+:root {
+  --bg: #fbf5ec;          /* crema */
+  --bg-alt: #f3e8d8;      /* crema más tostado */
+  --surface: #ffffff;
+  --ink: #2b1a1e;         /* texto principal */
+  --ink-soft: #5c4a4e;    /* texto secundario (AA sobre crema) */
+  --brand: #8a2846;       /* bordó del cartel */
+  --brand-strong: #6e1d37;
+  --brand-ink: #ffffff;   /* texto sobre bordó */
+  --accent: #c8323a;      /* rojo fachada */
+  --field: #4a6636;       /* verde campo */
+  --line: #e4d5c2;
+  --wa: #1f7a4a;          /* verde WhatsApp accesible (AA con blanco) */
+  --shadow: 43 26 30;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #1a1013;
+  --bg-alt: #24161a;
+  --surface: #2c1b20;
+  --ink: #f6ebe0;
+  --ink-soft: #cdb9b0;
+  --brand: #e48aa5;       /* bordó aclarado para contraste sobre oscuro */
+  --brand-strong: #f0a9be;
+  --brand-ink: #2a0e18;
+  --accent: #ef6b6f;
+  --field: #a9c48f;
+  --line: #44302f;
+  --wa: #1f7a4a;
+  --shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent: var(--accent);
+  --color-field: var(--field);
+  --color-line: var(--line);
+  --color-wa: var(--wa);
+  /* Bordó fijo (no cambia con el tema), para hero/footer */
+  --color-wine: #6e1d37;
+  --color-wine-deep: #4a1225;
+  --color-cream: #fbf5ec;
+
+  --font-serif: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Nunito Sans Variable', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ── Tamaño de letra (data-size en <html>) ─────────────────── */
+html { font-size: 100%; }
+html[data-size='1'] { font-size: 112.5%; }
+html[data-size='2'] { font-size: 125%; }
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+
+  /* Foco visible y consistente */
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  .on-dark :focus-visible, .on-dark:focus-visible { outline-color: #ffd7a8; }
+
+  ::selection { background: var(--brand); color: var(--brand-ink); }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8; }
+
+  .kicker {
+    @apply inline-flex items-center gap-2 font-sans text-sm font-bold uppercase tracking-[0.18em] text-brand;
+  }
+  .kicker::before {
+    content: '';
+    @apply inline-block h-px w-8 bg-current;
+  }
+
+  .section-title { @apply mt-3 text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl; }
+
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-bold;
+    transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out), background-color .25s ease,
+      color .25s ease, border-color .25s ease, filter .25s ease;
+  }
+  .btn-wa { @apply bg-wa text-white shadow-lg shadow-black/15; }
+  .btn-brand { @apply bg-brand text-brand-ink; }
+  .btn-ghost { @apply border-2 border-current bg-transparent; }
+  .btn-outline { @apply border-2 border-brand text-brand; }
+
+  /* ── Micro-animaciones ─────────────────────────────────────
+     .btn   botones           .tap   links/íconos chicos
+     .lift  cards clicables   .zoom  contenedor con imagen que se acerca  */
+  .tap { transition: transform .2s var(--ease-out), color .2s ease, opacity .2s ease, background-color .2s ease; }
+  .lift { transition: transform .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+  .zoom img { transition: transform .7s var(--ease-out), filter .7s ease; }
+
+  @media (hover: hover) {
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgb(0 0 0 / .45); }
+    .btn-wa:hover { filter: brightness(1.1); }
+    .btn-brand:hover { background: var(--brand-strong); }
+    .btn-ghost:hover { background: rgb(255 255 255 / .14); }
+    .btn-outline:hover { background: var(--brand); color: var(--brand-ink); }
+    .tap:hover { transform: translateY(-1px); }
+    .lift:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgb(var(--shadow) / .06), 0 22px 40px -18px rgb(var(--shadow) / .35); }
+    .zoom:hover img, .group:hover .zoom img { transform: scale(1.05); }
+  }
+  /* Respuesta al toque (celular) y al click */
+  .btn:active, .tap:active { transform: scale(.97); transition-duration: .08s; }
+  .lift:active { transform: scale(.985); transition-duration: .1s; }
+
+  /* Arco: el motivo del cartel y de la galería de la casa */
+  .arch { border-radius: 999px 999px 1.25rem 1.25rem; }
+  .arch-sm { border-radius: 12rem 12rem 1rem 1rem; }
+
+  .card {
+    @apply rounded-3xl border border-line bg-surface;
+    box-shadow: 0 1px 2px rgb(var(--shadow) / 0.05), 0 12px 32px -16px rgb(var(--shadow) / 0.18);
+  }
+
+  /* Línea punteada de carta de restaurante */
+  .menu-dots { @apply flex-1 border-b-2 border-dotted border-line translate-y-[-0.35em]; }
+}
+
+/* Símbolos decorativos con fuente del sistema (evita descargar otra fuente web) */
+.glyph { font-family: system-ui, "Segoe UI Symbol", sans-serif; font-style: normal; }
+
+/* Cinta de lemas */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee-track { animation: marquee 38s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* Aparición suave al hacer scroll (solo si hay JS y no se pide menos movimiento) */
+.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
+/* Ken Burns muy sutil en el fondo del hero */
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.07) translate3d(-1%, -1%, 0); } }
+.kenburns { animation: kenburns 28s ease-in-out infinite alternate; will-change: transform; transform-origin: 60% 45%; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track, .kenburns { animation: none !important; }
+  .btn:hover, .tap:hover, .lift:hover, .btn:active, .tap:active, .lift:active { transform: none !important; }
+  .zoom img { transform: none !important; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* Lightbox */
+dialog.lightbox::backdrop { background: rgb(20 8 12 / 0.92); }
+dialog.lightbox[open] { animation: fade 0.2s ease; }
+@keyframes fade { from { opacity: 0; } }

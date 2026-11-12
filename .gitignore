@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+.netlify/
+.vercel/
+
+# Capturas originales (contienen nombres de usuarios de Google Maps).
+# Las versiones recortadas y limpias están en src/assets/images/
+fotos/

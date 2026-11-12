@@ -1,0 +1,103 @@
+---
+import '../styles/global.css';
+import loraUrl from '@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url';
+import nunitoUrl from '@fontsource-variable/nunito-sans/files/nunito-sans-latin-wght-normal.woff2?url';
+import { site, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang);
+
+const base = Astro.site ?? new URL(site.url);
+const canonical = new URL(lang === 'es' ? '/' : '/en/', base).href;
+const esUrl = new URL('/', base).href;
+const enUrl = new URL('/en/', base).href;
+const ogImage = new URL('/og-image.jpg', base).href;
+
+// JSON-LD Schema.org Restaurant
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Restaurant',
+  name: site.name,
+  description: s.meta.description,
+  url: canonical,
+  image: ogImage,
+  logo: new URL('/logo.svg', base).href,
+  telephone: site.phones.map((p) => p.intl),
+  servesCuisine: site.servesCuisine,
+  slogan: site.slogans.es.join(' · '),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.locality,
+    addressRegion: site.address.region,
+    addressCountry: site.address.country,
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: site.geo.latitude, longitude: site.geo.longitude },
+  hasMap: site.googleMaps.link,
+  sameAs: [site.social.instagram.url, site.social.facebook.url],
+  acceptsReservations: 'False',
+};
+if (site.hours.length) {
+  jsonLd.openingHours = site.hours.map((h) => `${h.days.join(',')} ${h.open}-${h.close}`);
+}
+---
+<!doctype html>
+<html lang={s.htmlLang} data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{s.meta.title}</title>
+    <meta name="description" content={s.meta.description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es-UY" href={esUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={esUrl} />
+
+    <!-- Preferencias (tema y tamaño de letra) antes de pintar, sin parpadeo -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement, ls;
+        try { ls = window.localStorage; } catch (e) {}
+        var get = function (k) { try { return ls && ls.getItem(k); } catch (e) { return null; } };
+        var theme = get('ljc-theme') || 'system';
+        var dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        d.dataset.theme = dark ? 'dark' : 'light';
+        d.dataset.themePref = theme;
+        var size = get('ljc-size');
+        if (size === '1' || size === '2') d.dataset.size = size;
+        d.classList.add('js');
+      })();
+    </script>
+
+    <link rel="preload" href={loraUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={nunitoUrl} as="font" type="font/woff2" crossorigin />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#8a2846" />
+
+    <!-- Open Graph / redes -->
+    <meta property="og:type" content="restaurant.restaurant" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={s.meta.title} />
+    <meta property="og:description" content={s.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${site.name} — ${s.hero.tagline}`} />
+    <meta property="og:locale" content={s.ogLocale} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body class="min-h-dvh overflow-x-clip">
+    <a href="#contenido" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-brand focus:px-5 focus:py-3 focus:text-brand-ink">
+      {s.skip}
+    </a>
+    <slot />
+  </body>
+</html>

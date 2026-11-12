@@ -1,0 +1,94 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { featured, sections } from '../data/menu';
+import { site, waLink, type Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).kitchen;
+const askMsg = lang === 'es' ? 'Hola! ¿Qué hay hoy en la carta?' : 'Hi! What is on the menu today?';
+const [main, ...rest] = featured;
+---
+<section id="cocina" class="bg-bg-alt py-20 sm:py-28" aria-labelledby="kitchen-title">
+  <div class="container-x">
+    <div class="reveal max-w-2xl">
+      <p class="kicker">{s.kicker}</p>
+      <h2 id="kitchen-title" class="section-title">{s.title}</h2>
+      <p class="mt-5 text-lg text-ink-soft">{s.lead}</p>
+    </div>
+
+    <!-- Platos destacados -->
+    <ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      <li class="reveal card lift group overflow-hidden sm:col-span-2 lg:row-span-2">
+        <article class="flex h-full flex-col">
+          <div class="zoom relative overflow-hidden lg:min-h-[24rem] lg:flex-1">
+            <Image src={main.image} alt={main.alt[lang]} widths={[480, 800, 1100]} sizes="(min-width: 1024px) 60vw, (min-width: 640px) 90vw, 100vw"
+              class="aspect-[4/3] w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto lg:h-full" />
+            {main.tag && <span class="absolute left-4 top-4 rounded-full bg-wine px-3 py-1 text-sm font-bold text-white"><span class="glyph" aria-hidden="true">★</span> {main.tag[lang]}</span>}
+          </div>
+          <div class="p-6 sm:p-8">
+            <h3 class="text-2xl font-semibold sm:text-3xl">{main.name[lang]}</h3>
+            <p class="mt-2 text-lg text-ink-soft">{main.description[lang]}</p>
+          </div>
+        </article>
+      </li>
+      {rest.map((d) => (
+        <li class="reveal card lift group overflow-hidden">
+          <article>
+            <div class="zoom relative overflow-hidden">
+              <Image src={d.image} alt={d.alt[lang]} widths={[400, 640, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
+                class="aspect-[3/2] w-full object-cover" />
+              {d.tag && <span class="absolute left-3 top-3 rounded-full bg-wine px-3 py-1 text-xs font-bold text-white">{d.tag[lang]}</span>}
+            </div>
+            <div class="p-5">
+              <h3 class="text-xl font-semibold">{d.name[lang]}</h3>
+              <p class="mt-1.5 text-ink-soft">{d.description[lang]}</p>
+            </div>
+          </article>
+        </li>
+      ))}
+      <!-- Tradición del 29 -->
+      <li class="reveal on-dark relative flex flex-col justify-center overflow-hidden rounded-3xl bg-wine p-7 text-white lg:col-span-3 lg:px-12 lg:py-10">
+        <span class="pointer-events-none absolute -right-4 -top-8 select-none font-serif text-[9rem] font-bold leading-none text-white/10 before:content-['29']" aria-hidden="true"></span>
+        <h3 class="relative font-serif text-2xl font-semibold">{s.noquis}</h3>
+        <p class="relative mt-2 max-w-2xl text-white/90">{s.noquisText}</p>
+      </li>
+    </ul>
+
+    <!-- La carta completa -->
+    <div class="reveal relative mt-16 rounded-[2rem] border-2 border-brand/25 bg-surface p-6 sm:p-10 lg:p-14">
+      <div class="pointer-events-none absolute inset-3 rounded-[1.5rem] border border-brand/15" aria-hidden="true"></div>
+      <div class="relative text-center">
+        <p class="kicker justify-center">{site.name}</p>
+        <h3 class="mt-2 text-3xl font-semibold sm:text-4xl">{s.fullMenu}</h3>
+      </div>
+      <div class="relative mt-10 grid gap-x-14 gap-y-10 md:grid-cols-2">
+        {sections.map((sec) => (
+          <div>
+            <h4 class="mb-4 border-b-2 border-brand pb-2 font-serif text-xl font-semibold text-brand">{sec.title[lang]}</h4>
+            <ul class="space-y-3">
+              {sec.items.map((it) => (
+                <li>
+                  <div class="flex items-end gap-2">
+                    <span class="font-semibold">{it.name[lang]}</span>
+                    <span class="menu-dots" aria-hidden="true"></span>
+                    <span class="glyph text-brand" aria-hidden="true">✦</span>
+                  </div>
+                  {it.note && <p class="text-sm italic text-ink-soft">{it.note[lang]}</p>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div class="relative mt-10 flex flex-col items-center gap-4 text-center">
+        <p class="max-w-xl text-ink-soft">{s.fullMenuNote}</p>
+        <a href={waLink(site.phones[0].whatsapp, askMsg)} target="_blank" rel="noopener" class="btn btn-outline">
+          <Icon name="whatsapp" /> {s.ask}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

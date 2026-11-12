@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 130" role="img" aria-label="Lo de Juan y Cristina">
+  <g transform="translate(0,7)">
+  <g stroke="#2b1a1e" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <!-- gorro -->
+    <path fill="#ffffff" d="M24 19 C17 18 17 8 24 8 C25 2 33 0 36 5 C40 1 48 4 46 11 C51 13 49 20 43 19 Z"/>
+    <rect fill="#ffffff" x="24" y="17" width="19" height="6" rx="1.5"/>
+    <!-- cabeza -->
+    <circle fill="#f2c4a0" cx="33.5" cy="29" r="6"/>
+    <!-- brazo levantado (presenta el nombre) -->
+    <path fill="none" stroke="#2b1a1e" stroke-width="7" d="M43 40 L52 37 L60 33"/>
+    <path fill="none" stroke="#ffffff" stroke-width="4.2" d="M43 40 L52 37 L60 33"/>
+    <circle fill="#f2c4a0" cx="61.5" cy="32.3" r="2.6"/>
+    <!-- brazo en la cintura -->
+    <path fill="none" stroke="#2b1a1e" stroke-width="7" d="M24 40 L17 50 L24 57"/>
+    <path fill="none" stroke="#ffffff" stroke-width="4.2" d="M24 40 L17 50 L24 57"/>
+    <!-- chaqueta -->
+    <path fill="#ffffff" d="M23 38 Q33.5 33 44 38 L45 62 L22 62 Z"/>
+    <!-- pantalón -->
+    <path fill="#c8323a" d="M23.5 74 L32.5 74 L32 109 L25 109 Z"/>
+    <path fill="#c8323a" d="M34.5 74 L43.5 74 L42 109 L35 109 Z"/>
+    <!-- zapatos -->
+    <path fill="#2b1a1e" d="M23 109 L33 109 L33 113 L21 113 Q21 110 23 109 Z"/>
+    <path fill="#2b1a1e" d="M34.5 109 L44 109 Q46 110 46 113 L34.5 113 Z"/>
+    <!-- delantal -->
+    <path fill="#ffffff" d="M24.5 52 L42.5 52 L45 76 Q33.5 81 22 76 Z"/>
+    <path fill="none" stroke="#2b1a1e" stroke-width="1.6" d="M24.5 52.5 L42.5 52.5"/>
+    <path fill="none" stroke="#2b1a1e" stroke-width="1.2" d="M29 63 Q33.5 67 38 63"/>
+  </g></g>
+  <g fill="#8a2846" font-family="Lora, Georgia, 'Times New Roman', serif" font-size="34" font-weight="500">
+    <text x="80" y="40">Lo de</text>
+    <text x="80" y="78">Juan y</text>
+    <text x="80" y="116">Cristina</text>
+  </g>
+</svg>
