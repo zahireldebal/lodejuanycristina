@@ -24,7 +24,6 @@ const jobs = [
   { src: 'logo1', out: 'cartel-artesanos-en-pastas', crop: { left: 0, top: 4, width: 716, height: 837 } },
   { src: 'logo2', out: 'cartel-ruta-son-bienvenidos', crop: { left: 0, top: 0, width: 758, height: 845 } },
   // Platos
-  { src: 'comida1', out: 'raviolones-salsa-puerro', crop: { left: 180, top: 132, width: 1030, height: 720 } },
   { src: 'comida2', out: 'pan-casero-canasta', crop: { left: 78, top: 134, width: 1130, height: 720 } },
   { src: 'comida3', out: 'pan-escabeche-vino', crop: { left: 2, top: 4, width: 704, height: 696 } },
   { src: 'comida4', out: 'cheesecake-salsa-chocolate', crop: { left: 0, top: 4, width: 937, height: 484 } },

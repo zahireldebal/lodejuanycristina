@@ -35,7 +35,16 @@ const year = new Date().getFullYear();
       </ul>
     </div>
   </div>
-  <div class="container-x mt-12 flex flex-col gap-2 border-t border-white/15 pt-6 text-sm text-cream/75 sm:flex-row sm:justify-between">
+  <!-- Formas de pago -->
+  <div class="container-x mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <h2 class="font-sans text-sm font-bold uppercase tracking-wider text-cream/70">{s.footer.payments}</h2>
+    <ul class="flex flex-wrap gap-x-5 gap-y-2" role="list">
+      {site.payments.map((p) => (
+        <li class="inline-flex items-center gap-2 text-sm"><Icon name={p.icon} class="size-5 text-cream/80" />{p.label[lang]}</li>
+      ))}
+    </ul>
+  </div>
+  <div class="container-x mt-8 flex flex-col gap-2 border-t border-white/15 pt-6 text-sm text-cream/75 sm:flex-row sm:justify-between">
     <p>© {year} {site.name}. {s.footer.rights}</p>
     <p>{s.footer.made}</p>
   </div>

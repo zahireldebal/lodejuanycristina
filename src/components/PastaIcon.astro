@@ -1,0 +1,28 @@
+---
+/** Ilustración de línea para las pastas sin foto (no son fotos de stock). */
+interface Props { type: 'raviolon' | 'sorrentino' | 'noqui'; class?: string; }
+const { type, class: cls = 'size-24' } = Astro.props;
+const art = {
+  // Raviolón: borde repulgado (marcas del tenedor) y el relleno abultado al centro
+  raviolon: `
+    <rect x="8" y="8" width="48" height="48" rx="4" />
+    <path d="M14 8v5M20 8v5M26 8v5M32 8v5M38 8v5M44 8v5M50 8v5M14 51v5M20 51v5M26 51v5M32 51v5M38 51v5M44 51v5M50 51v5M8 14h5M8 20h5M8 26h5M8 32h5M8 38h5M8 44h5M8 50h5M51 14h5M51 20h5M51 26h5M51 32h5M51 38h5M51 44h5M51 50h5" stroke-width="1.6" opacity=".8" />
+    <rect x="19" y="19" width="26" height="26" rx="11" fill="currentColor" fill-opacity=".14" />
+    <path d="M25 27.5c2.5-2.5 6-3.2 9-2.2" opacity=".7" />`,
+  // Sorrentino: redondo, con el borde repulgado y el relleno al centro
+  sorrentino: `
+    <circle cx="32" cy="32" r="24" />
+    <circle cx="32" cy="32" r="24" stroke-width="5" stroke-dasharray="1.6 3.4" opacity=".55" />
+    <circle cx="32" cy="32" r="14" fill="currentColor" fill-opacity=".14" />
+    <path d="M25.5 28c2-2.6 5.5-3.6 8.5-2.8" opacity=".7" />`,
+  // Ñoquis: tres, con sus rayitas
+  noqui: `
+    <ellipse cx="20" cy="24" rx="11" ry="8" transform="rotate(-18 20 24)" />
+    <path d="M14 24.5c3-2.5 9-4.5 12-3.5M15 28c3-2 8-3.5 11-3" opacity=".75" />
+    <ellipse cx="44" cy="26" rx="11" ry="8" transform="rotate(14 44 26)" />
+    <path d="M38 24c3-.5 9 .5 12 3M37.5 28c3 0 8.5 1 11 3" opacity=".75" />
+    <ellipse cx="31" cy="44" rx="11" ry="8" />
+    <path d="M24 43c3-2 11-2 14 0M24.5 47c3-1.5 10-1.5 13 0" opacity=".75" />`,
+}[type];
+---
+<svg class={cls} viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" set:html={art} />

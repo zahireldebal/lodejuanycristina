@@ -68,9 +68,35 @@ export const site = {
 
   openEveryDay: true,
   servesCuisine: ['Uruguaya', 'Casera', 'Pastas artesanales', 'Cocina de campo'],
+
+  /** MÉTODOS DE PAGO — se muestran en Contacto, en el footer y en el JSON-LD (paymentAccepted). */
+  payments: [
+    { id: 'cash', icon: 'cash', label: { es: 'Efectivo', en: 'Cash' }, schema: 'Cash' },
+    { id: 'debit', icon: 'card', label: { es: 'Tarjeta de débito', en: 'Debit card' }, schema: 'Debit Card' },
+    { id: 'credit', icon: 'card-credit', label: { es: 'Tarjeta de crédito', en: 'Credit card' }, schema: 'Credit Card' },
+    { id: 'transfer', icon: 'bank', label: { es: 'Transferencia bancaria', en: 'Bank transfer' }, schema: 'Bank Transfer' },
+  ],
+
+  /**
+   * PASTAS A DOMICILIO — ⚠️ PLACEHOLDERS: completar.
+   * Mientras un valor siga entre corchetes [ ... ], el sitio muestra
+   * "Lo coordinamos por WhatsApp" en su lugar (no se publica el corchete).
+   */
+  delivery: {
+    zones: { es: '[ZONAS DE ENVÍO]', en: '[DELIVERY AREAS]' },
+    schedule: { es: '[DÍAS Y HORARIOS DE ENTREGA]', en: '[DELIVERY DAYS & TIMES]' },
+    minimum: { es: '[PEDIDO MÍNIMO / COSTO DE ENVÍO]', en: '[MINIMUM ORDER / DELIVERY FEE]' },
+    waMessage: {
+      es: 'Hola! Quiero hacer un pedido de pastas.',
+      en: 'Hi! I would like to order some pasta.',
+    },
+  },
 } as const;
 
 export type Lang = 'es' | 'en';
+
+/** true si un dato todavía es un placeholder entre corchetes */
+export const isPlaceholder = (v: string) => /^\s*\[.*\]\s*$/.test(v);
 
 /** Link de WhatsApp con mensaje predefinido */
 export const waLink = (number: string, message: string) =>

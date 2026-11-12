@@ -1,0 +1,207 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import PastaIcon from './PastaIcon.astro';
+import { pastas, salsas } from '../data/pastas';
+import type { Lang } from '../config/site';
+import { t } from '../i18n/ui';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const s = t(lang).pastas;
+const total = pastas.length;
+const fill = (str: string, n: number) => str.replace('{n}', String(n)).replace('{total}', String(total));
+---
+<section id="pastas" class="overflow-hidden py-20 sm:py-28" aria-labelledby="pastas-title">
+  <div class="container-x flex flex-wrap items-end justify-between gap-6">
+    <div class="reveal max-w-2xl">
+      <p class="kicker">{s.kicker}</p>
+      <h2 id="pastas-title" class="section-title">{s.title}</h2>
+      <p class="mt-5 text-lg text-ink-soft">{s.lead}</p>
+      <p class="mt-3 flex items-center gap-1.5 text-sm font-semibold text-brand md:hidden" aria-hidden="true"><Icon name="arrow" class="size-4" />{s.hint}</p>
+    </div>
+    <div class="hidden gap-2 md:flex">
+      <button type="button" class="pc-arrow tap" data-pc-prev aria-label={s.prev} aria-controls="pastas-track"><Icon name="left" class="size-6" /></button>
+      <button type="button" class="pc-arrow tap" data-pc-next aria-label={s.next} aria-controls="pastas-track"><Icon name="right" class="size-6" /></button>
+    </div>
+  </div>
+
+  <div class="reveal mt-10" role="region" aria-roledescription={lang === 'es' ? 'carrusel' : 'carousel'} aria-label={s.region}>
+    <div id="pastas-track" class="pc-track" tabindex="0">
+      {pastas.map((p, i) => (
+        <div class="pc-slide" role="group" aria-roledescription={lang === 'es' ? 'diapositiva' : 'slide'} aria-label={fill(s.slide, i + 1)}>
+          <article class="card lift group flex h-full flex-col overflow-hidden">
+            <div class="zoom relative aspect-[4/3] overflow-hidden">
+              {p.image ? (
+                <Image src={p.image} alt={p.alt?.[lang] ?? ''} widths={[360, 560, 760]} sizes="(min-width: 1024px) 30vw, 80vw" class="h-full w-full object-cover" draggable="false" />
+              ) : (
+                <div class="pc-noimg flex h-full w-full items-center justify-center text-cream">
+                  <PastaIcon type={p.icon} class="size-24 opacity-90 transition-transform duration-500 group-hover:scale-110 sm:size-28" />
+                </div>
+              )}
+              {p.tag && <span class="absolute left-3 top-3 rounded-full bg-cream px-3 py-1 text-xs font-bold text-wine">{p.tag[lang]}</span>}
+            </div>
+            <div class="flex flex-1 flex-col p-5">
+              <h3 class="text-xl font-semibold leading-snug">{p.name[lang]}</h3>
+              <p class="mt-1.5 text-ink-soft">{p.line[lang]}</p>
+            </div>
+          </article>
+        </div>
+      ))}
+    </div>
+
+    <div class="container-x mt-6 flex items-center justify-between gap-4">
+      <div class="flex gap-1" data-pc-dots>
+        {pastas.map((_, i) => (
+          <button type="button" class="pc-dot" data-pc-dot={i} aria-label={fill(s.goTo, i + 1)} aria-controls="pastas-track" aria-current={i === 0 ? 'true' : undefined}><span></span></button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="container-x mt-12 grid gap-5 lg:grid-cols-[1fr_1.4fr]">
+    <div class="reveal card p-6">
+      <h3 class="font-serif text-xl font-semibold">{s.salsas}</h3>
+      <ul class="mt-4 flex flex-wrap gap-2">
+        {salsas.map((x) => <li class="rounded-full border border-line bg-bg px-3 py-1.5 text-sm font-semibold">{x[lang]}</li>)}
+      </ul>
+    </div>
+    <div class="reveal on-dark relative flex flex-col justify-center overflow-hidden rounded-3xl bg-wine p-7 text-white">
+      <span class="pointer-events-none absolute -right-4 -top-8 select-none font-serif text-[9rem] font-bold leading-none text-white/10 before:content-['29']" aria-hidden="true"></span>
+      <h3 class="relative font-serif text-2xl font-semibold">{s.noquis}</h3>
+      <p class="relative mt-2 max-w-xl text-white/90">{s.noquisText}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .pc-track {
+      --pad: 1rem;
+      display: flex; gap: 1rem; overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory; scroll-behavior: smooth;
+      padding: .5rem var(--pad) 1.25rem; scroll-padding-inline: var(--pad);
+      scrollbar-width: none; cursor: grab;
+    }
+    .pc-track::-webkit-scrollbar { display: none; }
+    .pc-track.is-dragging { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; user-select: none; }
+    .pc-track:focus-visible { outline-offset: -3px; }
+    @media (min-width: 640px) { .pc-track { --pad: 1.5rem; gap: 1.25rem; } }
+    /* Alinea la primera card con el contenedor del resto de la página */
+    @media (min-width: 1024px) { .pc-track { --pad: max(2rem, calc((100% - 72rem) / 2 + 2rem)); } }
+
+    /* Se ve un pedazo de la card siguiente para invitar a deslizar */
+    .pc-slide { flex: 0 0 80%; scroll-snap-align: start; }
+    @media (min-width: 640px) { .pc-slide { flex-basis: 44%; } }
+    @media (min-width: 1024px) { .pc-slide { flex-basis: min(29%, 22rem); } }
+
+    .pc-noimg {
+      background:
+        radial-gradient(circle at 30% 20%, rgb(255 255 255 / .1), transparent 55%),
+        linear-gradient(135deg, #8a2846, #5a1830);
+    }
+
+    .pc-arrow {
+      display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 999px;
+      border: 2px solid var(--brand); color: var(--brand); background: var(--surface);
+      transition: background-color .25s ease, color .25s ease, opacity .25s ease, transform .2s ease;
+    }
+    @media (hover: hover) { .pc-arrow:not(:disabled):hover { background: var(--brand); color: var(--brand-ink); } }
+    .pc-arrow:disabled { opacity: .35; cursor: default; }
+
+    .pc-dot { display: grid; place-items: center; width: 1.75rem; height: 2.75rem; }
+    .pc-dot span { width: .55rem; height: .55rem; border-radius: 999px; background: var(--line); transition: width .3s ease, background-color .3s ease; }
+    .pc-dot[aria-current='true'] span { width: 1.5rem; background: var(--brand); }
+    @media (hover: hover) { .pc-dot:hover span { background: var(--brand); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pc-track { scroll-behavior: auto; }
+      .pc-dot span { transition: none; }
+    }
+  }
+</style>
+
+<script>
+  const track = document.getElementById('pastas-track') as HTMLDivElement | null;
+  if (track) {
+    const slides = [...track.querySelectorAll<HTMLElement>('.pc-slide')];
+    const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-pc-dot]')];
+    const prev = document.querySelector<HTMLButtonElement>('[data-pc-prev]');
+    const next = document.querySelector<HTMLButtonElement>('[data-pc-next]');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const behavior = (): ScrollBehavior => (reduce.matches ? 'auto' : 'smooth');
+    // Posición de cada card dentro del contenido desplazable (no depende del CSS con max()/%)
+    const pos = (el: HTMLElement) => el.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+    const padLeft = () => pos(slides[0]);
+
+    const maxScroll = () => track.scrollWidth - track.clientWidth;
+    // Posiciones a las que el carrusel realmente puede llegar (en pantallas anchas
+    // se ven varias cards a la vez, así que las últimas no pueden quedar "primeras")
+    const stops = () => {
+      const max = maxScroll(), pad = padLeft();
+      const list = slides.map((sl) => Math.min(pos(sl) - pad, max)).filter((x, i, a) => i === 0 || x - a[i - 1] > 4);
+      return list;
+    };
+    const current = () => {
+      const st = stops();
+      let best = 0, dist = Infinity;
+      st.forEach((x, i) => { const d = Math.abs(x - track.scrollLeft); if (d < dist) { dist = d; best = i; } });
+      return best;
+    };
+    const goTo = (i: number) => {
+      const st = stops();
+      i = Math.max(0, Math.min(st.length - 1, i));
+      track.scrollTo({ left: st[i], behavior: behavior() });
+    };
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const n = stops().length, i = current();
+      dots.forEach((d, k) => {
+        d.hidden = k >= n; // sobran puntitos si se ven varias cards a la vez
+        k === i ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current');
+      });
+      if (prev) prev.disabled = track.scrollLeft <= 2;
+      if (next) next.disabled = track.scrollLeft >= maxScroll() - 2;
+    };
+    track.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    addEventListener('resize', update);
+    update();
+
+    prev?.addEventListener('click', () => goTo(current() - 1));
+    next?.addEventListener('click', () => goTo(current() + 1));
+    dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+
+    // Teclado: flechas, Inicio y Fin cuando el carrusel tiene el foco
+    track.addEventListener('keydown', (e) => {
+      const keys: Record<string, number> = { ArrowRight: current() + 1, ArrowLeft: current() - 1, Home: 0, End: slides.length - 1 };
+      if (e.key in keys) { e.preventDefault(); goTo(keys[e.key]); }
+    });
+
+    // Arrastre con mouse (en touch el scroll nativo ya lo resuelve)
+    let startX = 0, startScroll = 0, dragging = false, moved = false;
+    track.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      dragging = true; moved = false; startX = e.clientX; startScroll = track.scrollLeft;
+      track.setPointerCapture(e.pointerId);
+    });
+    track.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) { moved = true; track.classList.add('is-dragging'); }
+      track.scrollLeft = startScroll - dx;
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove('is-dragging');
+      if (moved) goTo(current());
+    };
+    track.addEventListener('pointerup', end);
+    track.addEventListener('pointercancel', end);
+    // Evita que un arrastre dispare un click
+    track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    track.addEventListener('dragstart', (e) => e.preventDefault());
+  }
+</script>

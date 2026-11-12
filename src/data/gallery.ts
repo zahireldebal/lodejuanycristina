@@ -33,8 +33,8 @@ export const gallery: GalleryImage[] = [
     src: cartel,
     span: 'tall',
     alt: {
-      es: 'Cartel bordó en forma de arco con el chef ilustrado: "Artesanos en pastas — Lo de Juan y Cristina — Restaurante de campo"',
-      en: 'Burgundy arch-shaped sign with the illustrated chef: "Artesanos en pastas — Lo de Juan y Cristina — Restaurante de campo"',
+      es: 'Cartel bordó en forma de arco con el chef ilustrado: "Artesanos en pastas", "Lo de Juan y Cristina", "Restaurante de campo"',
+      en: 'Burgundy arch-shaped sign with the illustrated chef: "Artesanos en pastas", "Lo de Juan y Cristina", "Restaurante de campo"',
     },
   },
   {

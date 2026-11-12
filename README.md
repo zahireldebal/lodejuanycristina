@@ -28,7 +28,10 @@ Sitio informativo (one-page) del restaurante de campo **Lo de Juan y Cristina**,
 | ----------------------------------------------------- | ------------------------------- |
 | Teléfonos, dirección, redes, mapa, **horarios**       | `src/config/site.ts`            |
 | Dominio del sitio (sitemap, canonical, OG)            | `src/config/site-url.mjs`       |
-| Platos (destacados con foto + carta completa)         | `src/data/menu.ts`              |
+| Formas de pago y **pastas a domicilio** (placeholders) | `src/config/site.ts`           |
+| Pastas del carrusel y salsas                          | `src/data/pastas.ts`            |
+| Carta impresa en texto (platos y precios)             | `src/data/carta.ts`             |
+| Platos de "Nuestra cocina" (con foto + lista)         | `src/data/menu.ts`              |
 | Fotos de la galería y sus textos alternativos         | `src/data/gallery.ts`           |
 | Textos de todas las secciones (ES / EN)               | `src/i18n/ui.ts`                |
 | Colores, tipografías                                  | `src/styles/global.css`         |
@@ -53,6 +56,14 @@ Al completarlos se muestran en la sección **Contacto** y se publican en los dat
 2. Importala en `src/data/menu.ts` o `src/data/gallery.ts` y escribí su `alt` en español e inglés.
 
 Astro genera automáticamente las versiones AVIF/WebP en varios tamaños.
+
+### Pastas a domicilio
+
+En `src/config/site.ts`, dentro de `delivery`, reemplazá `[ZONAS DE ENVÍO]`, `[DÍAS Y HORARIOS DE ENTREGA]` y `[PEDIDO MÍNIMO / COSTO DE ENVÍO]` (en español y en inglés). Mientras sigan entre corchetes, el sitio muestra "Lo coordinamos por WhatsApp".
+
+### La carta en 3D
+
+Las fotos de la carta (`fotos/carta1.png` exterior y `fotos/carta2.png` interior) se enderezan y se limpian con `node scripts/process-carta.mjs`. Si cambian la carta, reemplazá las fotos, ajustá las esquinas del papel en ese script si hace falta, volvé a correrlo y actualizá el texto en `src/data/carta.ts`.
 
 ### Foto del hero
 

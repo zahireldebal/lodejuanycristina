@@ -38,6 +38,7 @@ const jsonLd: Record<string, unknown> = {
   hasMap: site.googleMaps.link,
   sameAs: [site.social.instagram.url, site.social.facebook.url],
   acceptsReservations: 'False',
+  paymentAccepted: site.payments.map((p) => p.schema).join(', '),
 };
 if (site.hours.length) {
   jsonLd.openingHours = site.hours.map((h) => `${h.days.join(',')} ${h.open}-${h.close}`);
@@ -88,7 +89,7 @@ if (site.hours.length) {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`${site.name} — ${s.hero.tagline}`} />
+    <meta property="og:image:alt" content={`${site.name}. ${s.hero.tagline}`} />
     <meta property="og:locale" content={s.ogLocale} />
     <meta name="twitter:card" content="summary_large_image" />
 

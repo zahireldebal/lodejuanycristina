@@ -26,7 +26,7 @@ const nt = t(lang).newTab;
             <span><span class="sr-only">{s.call} </span>{p.display}</span>
           </a>
           <div class="mt-6 grid grid-cols-2 gap-2">
-            <a href={`tel:${p.intl}`} class="btn btn-outline !px-3 text-sm"><Icon name="phone" class="size-4" />{lang === 'es' ? 'Llamar' : 'Call'}</a>
+            <a href={`tel:${p.intl}`} class="btn btn-outline !px-3 text-sm"><Icon name="phone" class="size-4" />{s.callShort}<span class="sr-only"> {p.display}</span></a>
             <a href={waLink(p.whatsapp, s.waMsg)} target="_blank" rel="noopener" class="btn btn-wa !px-3 text-sm">
               <Icon name="whatsapp" class="size-4" />{s.whatsapp}<span class="sr-only"> {p.display} {nt}</span>
             </a>
@@ -60,6 +60,24 @@ const nt = t(lang).newTab;
               <Icon name="facebook" class="size-4" />{site.social.facebook.handle}<span class="sr-only"> Facebook {nt}</span>
             </a>
           </div>
+        </div>
+      </div>
+
+      <!-- Formas de pago -->
+      <div class="reveal card p-6 md:col-span-2 lg:col-span-3">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 class="font-serif text-2xl font-semibold">{s.payments}</h3>
+            <p class="mt-1 text-ink-soft">{s.paymentsLead}</p>
+          </div>
+          <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" role="list">
+            {site.payments.map((p) => (
+              <li class="flex flex-col items-center gap-2 rounded-2xl bg-bg-alt px-3 py-4 text-center">
+                <span class="grid size-11 place-items-center rounded-full bg-surface text-brand ring-1 ring-line"><Icon name={p.icon} class="size-6" /></span>
+                <span class="text-sm font-semibold leading-tight">{p.label[lang]}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

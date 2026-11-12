@@ -1,11 +1,11 @@
 /**
- * LA CARTA — editá acá los platos.
- * - `featured`: platos destacados con foto (cards).
- * - `sections`: el resto de la carta, en lista.
- * No hay precios a propósito.
+ * NUESTRA COCINA — editá acá los platos.
+ * - `featured`: platos destacados con foto (cards). El primero va más ancho.
+ * - `sections`: otros platos que solemos cocinar, en lista.
+ * Las pastas tienen su propio archivo: src/data/pastas.ts
+ * La carta impresa con precios está en src/data/carta.ts
  */
 import type { ImageMetadata } from 'astro';
-import raviolones from '../assets/images/raviolones-salsa-puerro.jpg';
 import entrada from '../assets/images/entrada-pan-manteca-escabeche.jpg';
 import pan from '../assets/images/pan-casero-canasta.jpg';
 import carne from '../assets/images/carne-papas-rusticas-boniato.jpg';
@@ -24,24 +24,12 @@ export interface FeaturedDish {
 
 export const featured: FeaturedDish[] = [
   {
-    name: { es: 'Raviolones con salsa de puerro', en: 'Raviolones with leek sauce' },
+    name: { es: 'La entrada de la casa', en: 'Our house starter' },
     description: {
-      es: 'Pasta artesanal hecha en casa, con una salsa cremosa de puerro. La especialidad de la casa.',
-      en: 'Handmade pasta with a creamy leek sauce. The house specialty.',
+      es: 'Antes que nada llega esto a la mesa: pan casero, manteca de hierbas y escabeche.',
+      en: 'This is the first thing on your table: homemade bread, herb butter and escabeche.',
     },
-    tag: { es: 'Especialidad', en: 'House specialty' },
-    image: raviolones,
-    alt: {
-      es: 'Plato hondo con raviolones caseros cubiertos de salsa cremosa de puerro',
-      en: 'Deep plate of homemade raviolones covered in creamy leek sauce',
-    },
-  },
-  {
-    name: { es: 'Entrada de la casa', en: 'House starter' },
-    description: {
-      es: 'Pan casero recién horneado, manteca de hierbas y escabeche. Para arrancar como se debe.',
-      en: 'Freshly baked homemade bread, herb butter and escabeche (pickled preserve).',
-    },
+    tag: { es: 'Para empezar', en: 'To start' },
     image: entrada,
     alt: {
       es: 'Bandeja con pan casero en rodajas, un pocillo de manteca de hierbas y otro de escabeche',
@@ -51,8 +39,8 @@ export const featured: FeaturedDish[] = [
   {
     name: { es: 'Carne con papas rústicas y boniato', en: 'Meat with rustic potatoes and sweet potato' },
     description: {
-      es: 'Carne al horno con papas rústicas y boniato asado, bien de campo.',
-      en: 'Oven-roasted meat with rustic potatoes and roasted sweet potato, countryside style.',
+      es: 'Al horno, con papas rústicas y boniato asado.',
+      en: 'Oven roasted, with rustic potatoes and roasted sweet potato.',
     },
     image: carne,
     alt: {
@@ -61,10 +49,10 @@ export const featured: FeaturedDish[] = [
     },
   },
   {
-    name: { es: 'Pan casero de la casa', en: 'Homemade house bread' },
+    name: { es: 'Nuestro pan', en: 'Our bread' },
     description: {
-      es: 'Recién salido del horno, dorado por fuera y tierno por dentro. Llega a la mesa en su canasta.',
-      en: 'Fresh from the oven, golden outside and soft inside. It comes to your table in its basket.',
+      es: 'Lo horneamos acá y llega calentito, en la canasta.',
+      en: 'We bake it here and it comes to the table warm, in its basket.',
     },
     tag: { es: 'Casero', en: 'Homemade' },
     image: pan,
@@ -76,8 +64,8 @@ export const featured: FeaturedDish[] = [
   {
     name: { es: 'Flan con dulce de leche', en: 'Flan with dulce de leche' },
     description: {
-      es: 'El clásico de siempre, casero, con su caramelo y una buena cucharada de dulce de leche.',
-      en: 'The timeless homemade classic, with caramel and a generous spoonful of dulce de leche.',
+      es: 'Con su caramelo y una buena cucharada de dulce de leche al costado.',
+      en: 'With its caramel and a good spoonful of dulce de leche on the side.',
     },
     tag: { es: 'Postre', en: 'Dessert' },
     image: flan,
@@ -89,8 +77,8 @@ export const featured: FeaturedDish[] = [
   {
     name: { es: 'Cheesecake con salsa de chocolate', en: 'Cheesecake with chocolate sauce' },
     description: {
-      es: 'Suave y cremoso, con base crocante y salsa de chocolate por arriba.',
-      en: 'Soft and creamy, with a crunchy base and chocolate sauce on top.',
+      es: 'Base crocante y salsa de chocolate por arriba.',
+      en: 'A crunchy base and chocolate sauce on top.',
     },
     tag: { es: 'Postre', en: 'Dessert' },
     image: cheesecake,
@@ -107,14 +95,6 @@ export interface MenuSection {
 }
 
 export const sections: MenuSection[] = [
-  {
-    title: { es: 'Pastas caseras', en: 'Homemade pasta' },
-    items: [
-      { name: { es: 'Pastas caseras artesanales', en: 'Artisan homemade pasta' }, note: { es: 'La especialidad de la casa', en: 'House specialty' } },
-      { name: { es: 'Raviolones con salsa de puerro', en: 'Raviolones with leek sauce' } },
-      { name: { es: 'Ñoquis caseros', en: 'Homemade gnocchi' }, note: { es: 'Tradición de los días 29', en: 'A 29th-of-the-month tradition' } },
-    ],
-  },
   {
     title: { es: 'Cazuelas y del mar', en: 'Stews & seafood' },
     items: [
