@@ -1,7 +1,14 @@
 ---
 /**
- * Nuestra carta: tríptico 3D que se abre en dos pasos, recreado en HTML/CSS.
+ * Nuestra carta: tríptico 3D que se abre como un libro, recreado en HTML/CSS.
  * El contenido sale de src/data/carta.ts (texto real, legible por buscadores y lectores de pantalla).
+ *
+ * Animación:
+ * - Click, toque, botones y apertura automática: recorren la carta de forma continua
+ *   (primero la portada, después la solapa), igual que deslizar una barra de progreso.
+ * - Arrastre: el borde de la hoja sigue al dedo o al mouse; al soltar, la velocidad del gesto
+ *   decide si termina de abrirse o vuelve (resortes, sin rebotes exagerados).
+ * - La cámara (inclinación, tamaño y encuadre) se deriva de los ángulos de las hojas en cada cuadro.
  */
 import '@fontsource/patrick-hand/400.css';
 import Icon from './Icon.astro';
@@ -27,7 +34,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     </div>
   </div>
 
-  <div class="tri-root mt-10" data-tri data-step="0">
+  <div class="tri-root mt-10" data-tri>
     <div
       class="tri-stage"
       data-tri-stage
@@ -91,8 +98,9 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     </div>
 
     <div class="container-x">
-      <p class="tri-hint mt-6 flex items-center justify-center gap-2 text-sm text-cream/80" aria-hidden="true">
-        <Icon name="rotate" class="size-4" /> {s.hint}
+      <p class="tri-hint mt-6 flex min-h-6 items-center justify-center gap-2 text-center text-sm text-cream/80" aria-hidden="true">
+        <Icon name="rotate" class="size-4 shrink-0" />
+        <span data-tri-hint data-closed={s.hintClosed} data-half={s.hintHalf} data-open={s.hintOpen} data-back={s.hintBack}>{s.hintClosed}</span>
       </p>
       <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
         <button type="button" class="btn tri-btn-primary" data-tri-open aria-expanded="false" aria-controls="tri-book">
@@ -113,10 +121,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
 </section>
 
 <style is:global>
-  /* Ángulos de las bisagras animables con transición */
-  @property --a1 { syntax: '<angle>'; inherits: true; initial-value: 180deg; }
-  @property --a2 { syntax: '<angle>'; inherits: true; initial-value: -180deg; }
-
   @layer components {
     /* ── Sección: mesa oscura con una luz cálida detrás de la carta ── */
     .tri-section {
@@ -127,7 +131,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       overflow-x: clip;
     }
     .tri-btn-primary { background: #8a2846; color: #fff; }
-    @media (hover: hover) { .tri-btn-primary:hover { background: #a02f52; } }
+    @media (hover: hover) { .tri-btn-primary:not(:disabled):hover { background: #a02f52; } }
     .tri-btn-ghost { border: 2px solid rgb(251 245 236 / .7); color: #fbf5ec; }
     @media (hover: hover) { .tri-btn-ghost:not(:disabled):hover { background: rgb(251 245 236 / .12); } }
     .tri-section .btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: none; }
@@ -140,31 +144,25 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tri-stage {
       position: relative; height: calc(var(--H) + 4rem);
       display: flex; align-items: center; justify-content: center;
-      perspective: 2400px; perspective-origin: 50% 35%;
-      touch-action: pan-y; cursor: pointer; user-select: none; -webkit-user-select: none;
-      transition: opacity .25s ease;
+      perspective: 2200px; perspective-origin: 50% 30%;
+      touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none;
+      transition: opacity .22s ease;
     }
+    .tri-stage.is-grabbing { cursor: grabbing; }
     .tri-stage:focus-visible { outline: 3px solid #ffd7a8; outline-offset: -6px; border-radius: 1rem; }
     .tri-root.is-fading .tri-stage { opacity: 0; }
 
+    /* Estado inicial (cerrada) en CSS; después lo maneja el script cuadro a cuadro */
     .tri-book {
-      --sc: 1; --tx: 16deg; --ty: -14deg; --tz: 2deg;
-      --a1: 180deg; --a2: -180deg;
       position: relative; flex: none;
       width: calc(var(--W) * 3); height: var(--H);
-      transform-style: preserve-3d;
-      transform: scale(var(--sc)) rotateX(var(--tx)) rotateY(var(--ty)) rotateZ(var(--tz));
-      transition:
-        transform .8s cubic-bezier(.45, .05, .25, 1),
-        --a1 .75s cubic-bezier(.6, .05, .3, 1),
-        --a2 .75s cubic-bezier(.6, .05, .3, 1);
+      transform-style: preserve-3d; will-change: transform;
+      transform: rotateX(17deg) rotateY(-12deg) rotateZ(2deg);
     }
-    .tri-book.is-dragging { transition: transform .8s cubic-bezier(.45, .05, .25, 1); }
-
     .tri-leaf { position: absolute; top: 0; width: var(--W); height: 100%; transform-style: preserve-3d; }
-    .tri-leaf-l { left: 0; transform-origin: right center; transform: translateZ(2px) rotateY(var(--a1)); }
+    .tri-leaf-l { left: 0; transform-origin: right center; transform: translateZ(2px) rotateY(180deg); will-change: transform; }
     .tri-leaf-c { left: var(--W); }
-    .tri-leaf-r { left: calc(var(--W) * 2); transform-origin: left center; transform: translateZ(1px) rotateY(var(--a2)); }
+    .tri-leaf-r { left: calc(var(--W) * 2); transform-origin: left center; transform: translateZ(1px) rotateY(-180deg); will-change: transform; }
 
     /* Cada cara es un panel de papel */
     .tri-face {
@@ -178,14 +176,19 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       box-shadow: inset 0 0 0 1px rgb(90 60 30 / .12);
     }
     .tri-out { transform: rotateY(180deg); }
-    /* Sombreado en los dobleces mientras gira */
+    /* Luz: la hoja se oscurece al ponerse de canto y un brillo suave recorre el papel */
     .tri-face::after {
-      content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
-      background: linear-gradient(90deg, rgb(40 20 10 / .55), rgb(40 20 10 / .2));
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(var(--sheen-dir, 90deg), rgb(255 255 255 / var(--sheen, 0)) 0%, transparent 55%),
+        rgb(30 15 8 / var(--shade, 0));
     }
-    @supports (opacity: calc(sin(30deg))) {
-      .tri-leaf-l .tri-face::after { opacity: calc(sin(var(--a1)) * .55); }
-      .tri-leaf-r .tri-face::after { opacity: calc(sin(var(--a2)) * -.55); }
+    /* Sombra que proyecta una hoja levantada sobre el panel central */
+    .tri-leaf-c .tri-in::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+      background:
+        linear-gradient(90deg, rgb(40 20 10 / var(--cast-l, 0)) 0%, transparent 45%),
+        linear-gradient(270deg, rgb(40 20 10 / var(--cast-r, 0)) 0%, transparent 45%);
     }
     /* Marca suave del doblez en los bordes interiores */
     .tri-leaf-l .tri-in { box-shadow: inset -10px 0 14px -12px rgb(60 35 15 / .35), inset 0 0 0 1px rgb(90 60 30 / .12); }
@@ -193,11 +196,10 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
 
     /* Sombra sobre la mesa */
     .tri-floor {
-      position: absolute; left: 50%; bottom: 1.2rem; height: 2.6rem; width: var(--fw, var(--W));
-      transform: translateX(calc(-50% + var(--fx, 0px)));
+      position: absolute; left: 50%; bottom: 1.2rem; height: 2.6rem; width: var(--W);
+      transform: translateX(-50%);
       background: radial-gradient(ellipse at center, rgb(0 0 0 / .7), transparent 70%);
-      filter: blur(10px);
-      transition: width .8s cubic-bezier(.45,.05,.25,1), transform .8s cubic-bezier(.45,.05,.25,1);
+      filter: blur(10px); pointer-events: none;
     }
 
     /* ── Contenido de los paneles ── */
@@ -230,7 +232,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tri-root.is-reading .tri-stage { height: auto; display: block; perspective: none; touch-action: auto; cursor: auto; }
     .tri-root.is-reading .tri-floor { display: none; }
     .tri-root.is-reading .tri-book {
-      transform: none !important; transition: none;
+      transform: none !important;
       width: auto; height: auto; display: flex; gap: .75rem;
       overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
       padding: .25rem 7% 1rem; scrollbar-width: none;
@@ -238,7 +240,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tri-root.is-reading .tri-book::-webkit-scrollbar { display: none; }
     .tri-root.is-reading .tri-leaf { position: relative; left: auto; transform: none !important; flex: 0 0 86%; height: auto; scroll-snap-align: center; }
     .tri-root.is-reading .tri-face { position: relative; inset: auto; transform: none; backface-visibility: visible; font-size: 16px; height: 100%; border-radius: 4px; box-shadow: 0 10px 30px -12px rgb(0 0 0 / .6); }
-    .tri-root.is-reading .tri-face::after { display: none; }
+    .tri-root.is-reading .tri-face::after, .tri-root.is-reading .tri-face::before { display: none; }
     .tri-root.is-reading .tri-out { display: none; }
     .tri-root.is-reading .cs-title { font-size: 1.9em; }
     .tri-root.is-reading .cs-item, .tri-root.is-reading .cs-text { font-size: 1em; }
@@ -249,10 +251,9 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tri-dot[aria-current='true'] span { width: 1.6rem; background: #fbf5ec; }
     .tri-count { margin-left: .5rem; font-weight: 700; font-size: .9rem; color: #fbf5ec; font-variant-numeric: tabular-nums; }
 
-    /* Movimiento reducido: sin giros ni inclinación, solo fundidos (los maneja el JS) */
     @media (prefers-reduced-motion: reduce) {
-      .tri-book { transition: none; }
-      .tri-floor, .tri-dot span { transition: none; }
+      .tri-book { transform: none; }
+      .tri-dot span { transition: none; }
     }
   }
 </style>
@@ -262,161 +263,270 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
   if (root) {
     const stage = root.querySelector<HTMLElement>('[data-tri-stage]')!;
     const book = root.querySelector<HTMLElement>('[data-tri-book]')!;
+    const floor = root.querySelector<HTMLElement>('.tri-floor')!;
     const leaves = [...book.querySelectorAll<HTMLElement>('.tri-leaf')];
+    const [leafL, leafC, leafR] = leaves;
+    const facesL = [...leafL.querySelectorAll<HTMLElement>('.tri-face')];
+    const facesR = [...leafR.querySelectorAll<HTMLElement>('.tri-face')];
+    const centerIn = leafC.querySelector<HTMLElement>('.tri-in')!;
     const btnOpen = root.querySelector<HTMLButtonElement>('[data-tri-open]')!;
     const btnClose = root.querySelector<HTMLButtonElement>('[data-tri-close]')!;
     const btnFlip = root.querySelector<HTMLButtonElement>('[data-tri-flip]')!;
     const flipLabel = root.querySelector<HTMLElement>('[data-tri-flip-label]')!;
+    const hint = root.querySelector<HTMLElement>('[data-tri-hint]')!;
     const live = root.querySelector<HTMLElement>('[data-tri-live]')!;
     const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-tri-dot]')];
     const count = root.querySelector<HTMLElement>('[data-tri-count]')!;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
     const mobile = matchMedia('(max-width: 767px)');
-    const STEP_MS = 750;
 
-    let step = 0;          // 0 cerrada · 1 portada abierta · 2 abierta
-    let flipped = false;   // mostrando la contratapa
-    let reading = false;   // modo lectura (celular)
-    let timers: number[] = [];
-    let interacted = false;
+    const rad = (d: number) => (d * Math.PI) / 180;
+    const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+    const smooth = (x: number) => x * x * (3 - 2 * x);
+    const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+
+    // Resortes casi críticos: frenan suave, sin rebotes exagerados
+    type Spring = { x: number; v: number; target: number; k: number };
+    const spring = (x: number, k = 120): Spring => ({ x, v: 0, target: x, k });
+    const a1 = spring(180);        // portada: 180 cerrada (encima) · 0 abierta (a la izquierda)
+    const a2 = spring(-180);       // solapa: -180 cerrada · 0 abierta (a la derecha)
+    const flip = spring(0, 90);    // 0 portada · 180 contratapa
+    // La cámara (encuadre y tamaño) se calcula directo de los ángulos en cada cuadro: como las hojas
+    // se mueven suave, la cámara también, y la carta nunca se sale del recuadro.
+    const cam = { shift: 0, scale: 1 };
+    const springs = [a1, a2, flip];
+
+    // Recorrido continuo (click, botones, apertura automática): 0 cerrada · 100 portada abierta · 200 abierta
+    const progress = () => (180 - a1.x) / 1.8 + (a2.x + 180) / 1.8;
+    const setProgress = (p: number) => {
+      a1.x = a1.target = 180 - Math.min(p, 100) * 1.8; a1.v = 0;
+      a2.x = a2.target = -180 + Math.max(0, p - 100) * 1.8; a2.v = 0;
+    };
+    let tween: { from: number; to: number; t0: number; dur: number; done?: () => void } | null = null;
+    let dragging: null | { spring: Spring; which: 'cover' | 'flap'; grabR: number; offset: number; hist: { t: number; a: number }[] } = null;
+    let reading = false, interacted = false, measured = false;
+    let raf = 0, last = 0;
+    const timers: number[] = [];
     const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
-    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    const clearTimers = () => { timers.forEach(clearTimeout); timers.length = 0; };
 
-    const W = () => parseFloat(getComputedStyle(root).getPropertyValue('--W')) || 300;
-    const stageW = () => stage.clientWidth - 24;
+    const W = () => leafC.offsetWidth || 300;
+
+    function cameraTargets() {
+      const w = W();
+      // lo que sobresale cada hoja hacia los costados, más un margen cuando está de canto
+      // (al acercarse a la cámara, la perspectiva la agranda)
+      const e1 = (Math.max(0, Math.cos(rad(a1.x))) + 0.32 * Math.sin(rad(a1.x))) * w;
+      const e2 = (Math.max(0, Math.cos(rad(a2.x))) + 0.32 * Math.sin(rad(-a2.x))) * w;
+      const span = w + e1 + e2;
+      cam.shift = (e1 - e2) / 2;
+      cam.scale = Math.min(1, (stage.clientWidth - 24) / span);
+      return span;
+    }
 
     function render() {
-      const w = W(), sw = stageW();
-      const scOpen = Math.min(1, sw / (w * 3));
-      const scClosed = Math.min(1, sw / (w * 1.15));
-      const sc = step === 0 ? scClosed : scOpen;
-      const r = reduce.matches;
-      const tilt = r ? [0, 0, 0] : step === 0 ? [16, -14, 2] : step === 1 ? [7, -5, 0] : [0, 0, 0];
-      book.style.setProperty('--sc', String(sc));
-      book.style.setProperty('--tx', `${tilt[0]}deg`);
-      book.style.setProperty('--ty', `${tilt[1] + (flipped ? 180 : 0)}deg`);
-      book.style.setProperty('--tz', `${tilt[2]}deg`);
-      book.style.setProperty('--a1', step >= 1 ? '0deg' : '180deg');
-      book.style.setProperty('--a2', step >= 2 ? '0deg' : '-180deg');
-      // sombra sobre la mesa según lo que ocupa la carta
-      const visible = step === 0 ? w : step === 1 ? w * 2 : w * 3;
-      stage.style.setProperty('--fw', `${visible * sc * 0.95}px`);
-      stage.style.setProperty('--fx', `${step === 1 ? -w * 0.5 * sc : 0}px`);
+      const span = cameraTargets();
+      const open = clamp(1 - (a1.x / 180 + -a2.x / 180) / 2, 0, 1);
+      const e = reduce.matches ? 1 : smooth(open);
+      const tx = 17 * (1 - e), ty = -12 * (1 - e) + flip.x, tz = 2 * (1 - e);
+      const sc = cam.scale;
+      book.style.transform = `translateX(${cam.shift * sc}px) scale(${sc}) rotateX(${tx}deg) rotateY(${ty}deg) rotateZ(${tz}deg)`;
+      leafL.style.transform = `translateZ(2px) rotateY(${a1.x}deg)`;
+      leafR.style.transform = `translateZ(1px) rotateY(${a2.x}deg)`;
 
-      root.dataset.step = String(step);
-      btnOpen.setAttribute('aria-expanded', String(step === 2));
-      btnClose.disabled = step === 0 && !flipped;
-      flipLabel.textContent = flipped ? btnFlip.dataset.labelFront! : btnFlip.dataset.labelBack!;
-      live.textContent = flipped ? live.dataset.back! : step === 0 ? live.dataset.closed! : step === 1 ? live.dataset.half! : live.dataset.open!;
+      // luz y sombras
+      const s1 = Math.sin(rad(a1.x)), s2 = Math.sin(rad(-a2.x));
+      facesL.forEach((f) => { f.style.setProperty('--shade', (s1 * 0.42).toFixed(3)); f.style.setProperty('--sheen', (s1 * 0.35).toFixed(3)); f.style.setProperty('--sheen-dir', `${90 + a1.x / 2}deg`); });
+      facesR.forEach((f) => { f.style.setProperty('--shade', (s2 * 0.42).toFixed(3)); f.style.setProperty('--sheen', (s2 * 0.35).toFixed(3)); f.style.setProperty('--sheen-dir', `${270 - a2.x / 2}deg`); });
+      centerIn.style.setProperty('--cast-l', a1.x < 178 ? (s1 * 0.45).toFixed(3) : '0');
+      centerIn.style.setProperty('--cast-r', a2.x > -178 ? (s2 * 0.45).toFixed(3) : '0');
+      floor.style.width = `${span * sc * 0.92}px`;
+      floor.style.transform = `translateX(calc(-50% + ${cam.shift * sc}px))`;
+      floor.style.opacity = String(0.55 + 0.45 * (1 - e));
+      ui();
     }
 
-    // Con movimiento reducido: fundido entre estados en lugar de giro
-    function go(fn: () => void) {
-      if (!reduce.matches) { fn(); render(); return; }
-      root.classList.add('is-fading');
-      later(() => { fn(); render(); root.classList.remove('is-fading'); }, 220);
+    const state = () => (flip.target > 90 ? 'back' : a1.target > 90 ? 'closed' : a2.target < -90 ? 'half' : 'open');
+    let lastState = '';
+    function ui() {
+      if (dragging) return;   // el texto de ayuda cambia al soltar, no a mitad del gesto
+      const st = state();
+      if (st === lastState) return;
+      lastState = st;
+      btnOpen.setAttribute('aria-expanded', String(st === 'open'));
+      btnOpen.disabled = st === 'open';
+      btnClose.disabled = st === 'closed';
+      flipLabel.textContent = st === 'back' ? btnFlip.dataset.labelFront! : btnFlip.dataset.labelBack!;
+      hint.textContent = hint.dataset[st] || '';
+      live.textContent = live.dataset[st] || '';
     }
 
+    // ── Bucle de animación ──
+    function frame(now: number) {
+      const dt = Math.min(1 / 30, (now - (last || now)) / 1000);
+      last = now;
+      let moving = false;
+      if (tween) {
+        const k = clamp((now - tween.t0) / tween.dur, 0, 1);
+        setProgress(tween.from + (tween.to - tween.from) * easeInOut(k));
+        moving = true;
+        if (k >= 1) { const done = tween.done; tween = null; done?.(); }
+      }
+      for (const s of springs) {
+        if ((dragging && s === dragging.spring) || (tween && (s === a1 || s === a2))) continue;
+        const c = 2 * Math.sqrt(s.k) * 0.92;
+        s.v += (-s.k * (s.x - s.target) - c * s.v) * dt;
+        s.x += s.v * dt;
+        if (Math.abs(s.v) > 0.01 || Math.abs(s.x - s.target) > 0.01) moving = true;
+        else { s.x = s.target; s.v = 0; }
+      }
+      render();
+      if (moving || dragging || tween) raf = requestAnimationFrame(frame);
+      else { raf = 0; last = 0; settled(); }
+    }
+    const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+    // Recorre la carta de forma continua hasta `to` (0, 100 o 200)
+    function playTo(to: number, done?: () => void) {
+      const from = progress();
+      if (Math.abs(to - from) < 0.5) { done?.(); return; }
+      if (reduce.matches) { fade(() => setProgress(to)); done?.(); return; }
+      tween = { from, to, t0: performance.now(), dur: 380 + Math.abs(to - from) * 7.5, done };
+      kick();
+    }
+
+    // Movimiento reducido: sin giros, fundido entre estados
+    function fade(fn: () => void) {
+      root!.classList.add('is-fading');
+      later(() => {
+        fn();
+        for (const s of springs) { s.x = s.target; s.v = 0; }
+        cameraTargets();
+        render();
+        root!.classList.remove('is-fading');
+        settled();
+      }, 220);
+    }
+    const setFlip = (deg: number) => { if (reduce.matches) fade(() => { flip.target = deg; }); else { flip.target = deg; kick(); } };
+
+    // Cuando la carta queda quieta y abierta en un celular, pasa al modo lectura
+    function settled() {
+      if (!reading && mobile.matches && state() === 'open' && !tween && !dragging) later(() => setReading(true), 150);
+    }
     function setReading(on: boolean, after?: () => void) {
       if (on === reading) { after?.(); return; }
-      root.classList.add('is-fading');
+      root!.classList.add('is-fading');
       later(() => {
         reading = on;
-        root.classList.toggle('is-reading', on);
+        root!.classList.toggle('is-reading', on);
         if (on) { book.scrollLeft = 0; updateDots(); }
-        requestAnimationFrame(() => root.classList.remove('is-fading'));
-        if (after) later(after, 260);
-      }, 250);
-    }
-    const maybeRead = () => { if (step === 2 && mobile.matches) later(() => setReading(true), reduce.matches ? 300 : STEP_MS + 50); };
-
-    function openFully() {
-      clearTimers(); interacted = true;
-      const run = () => {
-        if (step === 0) { go(() => { step = 1; }); later(() => go(() => { step = 2; }), reduce.matches ? 450 : STEP_MS); }
-        else if (step === 1) go(() => { step = 2; });
-        later(maybeRead, reduce.matches ? 500 : STEP_MS);
-      };
-      if (flipped) { go(() => { flipped = false; }); later(run, reduce.matches ? 300 : 800); } else run();
-    }
-    function closeFully(after?: () => void) {
-      clearTimers(); interacted = true;
-      setReading(false, () => {
-        if (step === 2) { go(() => { step = 1; }); later(() => { go(() => { step = 0; }); if (after) later(after, STEP_MS); }, reduce.matches ? 450 : STEP_MS); }
-        else if (step === 1) { go(() => { step = 0; }); if (after) later(after, STEP_MS); }
-        else after?.();
-      });
-    }
-    function advance() {
-      clearTimers(); interacted = true;
-      if (flipped) { go(() => { flipped = false; }); return; }
-      if (step < 2) go(() => { step += 1; });
+        else { cameraTargets(); render(); }
+        requestAnimationFrame(() => root!.classList.remove('is-fading'));
+        if (after) later(after, 240);
+      }, 230);
     }
 
-    btnOpen.addEventListener('click', openFully);
-    btnClose.addEventListener('click', () => (flipped ? go(() => { flipped = false; }) : closeFully()));
+    function openAll() {
+      clearTimers(); interacted = true; stopPeek();
+      const go = () => playTo(200);
+      if (state() === 'back') { setFlip(0); later(go, reduce.matches ? 300 : 650); } else go();
+    }
+    function closeAll(then?: () => void) {
+      clearTimers(); interacted = true; stopPeek();
+      setReading(false, () => playTo(0, then));
+    }
+    function nextStep() {
+      interacted = true; stopPeek();
+      const st = state();
+      if (st === 'back') setFlip(0);
+      else if (st === 'closed') openAll();
+      else if (st === 'half') playTo(200);
+    }
+    function prevStep() {
+      interacted = true; stopPeek();
+      const st = state();
+      if (st === 'open') setReading(false, () => playTo(100));
+      else if (st === 'half') playTo(0);
+    }
+
+    btnOpen.addEventListener('click', openAll);
+    btnClose.addEventListener('click', () => (state() === 'back' ? setFlip(0) : closeAll()));
     btnFlip.addEventListener('click', () => {
-      interacted = true;
-      if (step > 0) closeFully(() => go(() => { flipped = true; }));
-      else go(() => { flipped = !flipped; });
+      interacted = true; stopPeek();
+      if (state() === 'back') setFlip(0);
+      else if (state() === 'closed') setFlip(180);
+      else closeAll(() => setFlip(180));
     });
 
-    // ── Arrastre (Pointer Events: mouse y touch) ──
-    let down = false, dragging = false, startX = 0, startY = 0, startT = 0, mode: 'a1' | 'a2' | null = null, val = 0;
+    // ── Arrastre: el borde de la hoja sigue al dedo (Pointer Events: mouse y touch) ──
+    let down: { x: number; y: number; t: number } | null = null;
     stage.addEventListener('pointerdown', (e) => {
       if (reading || e.button !== 0) return;
-      down = true; dragging = false; startX = e.clientX; startY = e.clientY; startT = performance.now();
+      down = { x: e.clientX, y: e.clientY, t: performance.now() };
     });
     stage.addEventListener('pointermove', (e) => {
-      if (!down || reduce.matches || flipped) return;
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      if (!dragging) {
-        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
-        // qué bisagra se mueve según el paso y la dirección del gesto
-        mode = step === 0 && dx < 0 ? 'a1' : step === 1 && dx > 0 ? 'a2' : step === 1 && dx < 0 ? 'a1' : step === 2 && dx < 0 ? 'a2' : null;
-        if (!mode) return;
-        dragging = true; interacted = true; clearTimers();
-        stage.setPointerCapture(e.pointerId);
-        book.classList.add('is-dragging');
-      }
-      const span = W() * parseFloat(getComputedStyle(book).getPropertyValue('--sc') || '1');
-      const k = (dx / span) * 180;
-      if (mode === 'a1') val = step === 0 ? Math.max(0, Math.min(180, 180 + k)) : Math.max(0, Math.min(180, -k));
-      else val = step === 1 ? Math.max(-180, Math.min(0, -180 + k)) : Math.max(-180, Math.min(0, k));
-      book.style.setProperty(mode === 'a1' ? '--a1' : '--a2', `${val}deg`);
-    });
-    const release = (e: PointerEvent, cancelled = false) => {
       if (!down) return;
-      down = false;
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (!dragging) {
+        if (reduce.matches || state() === 'back') return;
+        if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return;
+        const rc = leafC.getBoundingClientRect();
+        const st = state();
+        const which: 'cover' | 'flap' = st === 'closed' ? 'cover' : st === 'half' && down.x < rc.left + rc.width * 0.15 ? 'cover' : 'flap';
+        const s = which === 'cover' ? a1 : a2;
+        const hingeX = which === 'cover' ? rc.left : rc.right;
+        const w = rc.width;
+        const grabR = clamp(Math.abs(down.x - hingeX) / w, 0.4, 1);
+        // diferencia entre donde está la hoja y donde está el dedo, para que no salte al agarrarla
+        const cNow = which === 'cover' ? -Math.cos(rad(s.x)) : Math.cos(rad(s.x));
+        const cFinger = (down.x - hingeX) / (w * grabR);
+        tween = null; clearTimers(); interacted = true; stopPeek();
+        dragging = { spring: s, which, grabR, offset: cNow - cFinger, hist: [] };
+        stage.setPointerCapture(e.pointerId);
+        stage.classList.add('is-grabbing');
+        kick();
+      }
+      const d = dragging;
+      // el punto agarrado queda bajo el dedo: se mide contra la bisagra en su posición actual
+      const rc = leafC.getBoundingClientRect();
+      const hinge = d.which === 'cover' ? rc.left : rc.right;
+      const c = clamp((e.clientX - hinge) / (rc.width * d.grabR) + d.offset, -1, 1);
+      const ang = d.which === 'cover' ? 180 - (Math.acos(c) * 180) / Math.PI : -(Math.acos(c) * 180) / Math.PI;
+      d.spring.x = d.spring.target = ang;
+      d.hist.push({ t: performance.now(), a: ang }); if (d.hist.length > 6) d.hist.shift();
+    });
+    const release = (e: PointerEvent, cancelled: boolean) => {
+      if (!down) return;
+      const tap = !dragging && !cancelled && performance.now() - down.t < 380 && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8;
+      down = null;
       if (dragging) {
-        dragging = false;
-        book.classList.remove('is-dragging');
-        // al soltar se completa o vuelve, según cuánto se giró
-        if (mode === 'a1') step = step === 0 ? (val < 90 ? 1 : 0) : (val > 90 ? 0 : 1);
-        else if (mode === 'a2') step = step === 1 ? (val > -90 ? 2 : 1) : (val < -90 ? 1 : 2);
-        render();
-        if (step === 2) later(maybeRead, STEP_MS);
+        const d = dragging; dragging = null;
+        stage.classList.remove('is-grabbing');
+        const h = d.hist, n = h.length;
+        const vel = n > 1 ? ((h[n - 1].a - h[0].a) / Math.max(16, h[n - 1].t - h[0].t)) * 1000 : 0;   // grados/s
+        const projected = d.spring.x + vel * 0.18;
+        d.spring.target = d.which === 'cover' ? (projected < 90 ? 0 : 180) : (projected > -90 ? 0 : -180);
+        d.spring.v = clamp(vel, -900, 900);
+        kick();
         return;
       }
-      // toque o click corto: siguiente paso
-      if (!cancelled && performance.now() - startT < 450 && Math.hypot(e.clientX - startX, e.clientY - startY) < 8) {
-        advance();
-        if (step === 2) later(maybeRead, STEP_MS);
-      }
+      if (tap) nextStep();
     };
-    stage.addEventListener('pointerup', (e) => release(e));
+    stage.addEventListener('pointerup', (e) => release(e, false));
     stage.addEventListener('pointercancel', (e) => release(e, true));
+    stage.addEventListener('dragstart', (e) => e.preventDefault());
 
     // ── Teclado ──
     stage.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (flipped) advance(); else openFully(); }
-      if (e.key === 'Escape') { e.preventDefault(); if (flipped) go(() => { flipped = false; }); else closeFully(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state() === 'back' ? nextStep() : openAll(); }
+      else if (e.key === 'Escape') { e.preventDefault(); state() === 'back' ? setFlip(0) : closeAll(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); nextStep(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
     });
 
     // ── Modo lectura: puntitos ──
     function updateDots() {
-      const i = Math.round(book.scrollLeft / Math.max(1, (book.scrollWidth - book.clientWidth) / 2));
-      const n = Math.max(0, Math.min(2, i));
+      const n = clamp(Math.round(book.scrollLeft / Math.max(1, (book.scrollWidth - book.clientWidth) / 2)), 0, 2);
       dots.forEach((d, k) => (k === n ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
       count.textContent = `${n + 1}/3`;
     }
@@ -425,31 +535,42 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       leaves[i].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
     }));
 
-    // Al cambiar de tamaño: recalcula escala y sale del modo lectura si ya no es celular
+    // ── Invitación: cerrada, la portada se levanta apenas cada tanto ──
+    let peekTimer = 0;
+    function peek() {
+      if (interacted || reduce.matches || state() !== 'closed' || !measured) return;
+      a1.target = 160; kick();
+      later(() => { if (!interacted) { a1.target = 180; kick(); } }, 520);
+      peekTimer = window.setTimeout(peek, 3800);
+    }
+    function stopPeek() { clearTimeout(peekTimer); if (a1.target > 90 && a1.target < 180 && !dragging) a1.target = 180; }
+
     addEventListener('resize', () => {
+      if (!measured) return;
       if (reading && !mobile.matches) setReading(false);
-      else if (!reading && step === 2 && mobile.matches) setReading(true);
-      render();
+      else if (!reading && mobile.matches && state() === 'open') setReading(true);
+      cameraTargets(); render();
     });
 
-    // Se abre sola la primera vez que entra en pantalla (salvo movimiento reducido)
-    if (!reduce.matches && 'IntersectionObserver' in window) {
-      const io = new IntersectionObserver(([entry]) => {
-        if (entry.isIntersecting) {
-          io.disconnect();
-          later(() => { if (!interacted && step === 0 && !flipped) openFully(); }, 700);
-        }
-      }, { threshold: 0.6 });
-      io.observe(stage);
+    // La primera medición se hace cuando la carta se acerca a la pantalla (no fuerza un layout durante la carga).
+    // Cuando entra en pantalla por primera vez, se abre sola (salvo movimiento reducido o si ya la tocaste).
+    function firstRender() {
+      if (measured) return;
+      measured = true;
+      cameraTargets();
+      render();
     }
-
-    // La primera medición (escala, sombra) se hace recién cuando la carta se acerca a la pantalla:
-    // así no se fuerza un layout de toda la página durante la carga. El estado inicial ya está en el CSS.
-    let measured = false;
-    const firstRender = () => { if (!measured) { measured = true; render(); } };
     if ('IntersectionObserver' in window) {
-      const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); firstRender(); } }, { rootMargin: '600px 0px' });
-      near.observe(stage);
+      new IntersectionObserver(([e], obs) => { if (e.isIntersecting) { obs.disconnect(); firstRender(); } }, { rootMargin: '600px 0px' }).observe(stage);
+      if (!reduce.matches) {
+        new IntersectionObserver(([e], obs) => {
+          if (!e.isIntersecting) return;
+          obs.disconnect();
+          firstRender();
+          peekTimer = window.setTimeout(peek, 500);
+          later(() => { if (!interacted && state() === 'closed') { stopPeek(); interacted = true; playTo(200); } }, 2200);
+        }, { threshold: 0.6 }).observe(stage);
+      }
     } else firstRender();
     stage.addEventListener('focus', firstRender, { once: true });
   }

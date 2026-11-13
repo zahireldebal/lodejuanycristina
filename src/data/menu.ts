@@ -1,7 +1,6 @@
 /**
  * NUESTRA COCINA — editá acá los platos.
  * - `featured`: platos destacados con foto (cards). El primero va más ancho.
- * - `sections`: otros platos que solemos cocinar, en lista.
  * Las pastas tienen su propio archivo: src/data/pastas.ts
  * La carta impresa con precios está en src/data/carta.ts
  */
@@ -86,38 +85,5 @@ export const featured: FeaturedDish[] = [
       es: 'Porción individual de cheesecake con salsa de chocolate y una hoja de menta',
       en: 'Individual cheesecake topped with chocolate sauce and a mint leaf',
     },
-  },
-];
-
-export interface MenuSection {
-  title: T;
-  items: Array<{ name: T; note?: T }>;
-}
-
-export const sections: MenuSection[] = [
-  {
-    title: { es: 'Cazuelas y del mar', en: 'Stews & seafood' },
-    items: [
-      { name: { es: 'Cazuela de mariscos', en: 'Seafood stew' } },
-      { name: { es: 'Cazuela de cordero', en: 'Lamb stew' } },
-      { name: { es: 'Pescados', en: 'Fish' } },
-      { name: { es: 'Camarones', en: 'Shrimp' } },
-    ],
-  },
-  {
-    title: { es: 'Carnes', en: 'Meats' },
-    items: [
-      { name: { es: 'Cordero relleno', en: 'Stuffed lamb' } },
-      { name: { es: 'Costillas de cerdo asadas', en: 'Roasted pork ribs' } },
-      { name: { es: 'Carne con papas rústicas y boniato', en: 'Meat with rustic potatoes and sweet potato' } },
-    ],
-  },
-  {
-    title: { es: 'Para empezar y para terminar', en: 'To start & to finish' },
-    items: [
-      { name: { es: 'Entrada de la casa: pan casero, manteca de hierbas y escabeche', en: 'House starter: homemade bread, herb butter and escabeche' } },
-      { name: { es: 'Flan con dulce de leche', en: 'Flan with dulce de leche' } },
-      { name: { es: 'Cheesecake con salsa de chocolate', en: 'Cheesecake with chocolate sauce' } },
-    ],
   },
 ];

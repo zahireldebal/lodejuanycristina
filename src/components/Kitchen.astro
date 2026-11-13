@@ -1,14 +1,12 @@
 ---
 import { Image } from 'astro:assets';
-import Icon from './Icon.astro';
-import { featured, sections } from '../data/menu';
-import { site, waLink, type Lang } from '../config/site';
+import { featured } from '../data/menu';
+import type { Lang } from '../config/site';
 import { t } from '../i18n/ui';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const s = t(lang).kitchen;
-const askMsg = lang === 'es' ? 'Hola! ¿Qué hay hoy en la carta?' : 'Hi! What is on the menu today?';
 ---
 <section id="cocina" class="bg-bg-alt py-20 sm:py-28" aria-labelledby="kitchen-title">
   <div class="container-x">
@@ -37,39 +35,5 @@ const askMsg = lang === 'es' ? 'Hola! ¿Qué hay hoy en la carta?' : 'Hi! What i
         </li>
       ))}
     </ul>
-
-    <!-- Otros platos que solemos hacer -->
-    <div class="reveal relative mt-16 rounded-[2rem] border-2 border-brand/25 bg-surface p-6 sm:p-10 lg:p-14">
-      <div class="pointer-events-none absolute inset-3 rounded-[1.5rem] border border-brand/15" aria-hidden="true"></div>
-      <div class="relative text-center">
-        <p class="kicker justify-center">{site.name}</p>
-        <h3 class="mt-2 text-3xl font-semibold sm:text-4xl">{s.fullMenu}</h3>
-      </div>
-      <div class="relative mt-10 grid gap-x-12 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-        {sections.map((sec) => (
-          <div>
-            <h4 class="mb-4 border-b-2 border-brand pb-2 font-serif text-xl font-semibold text-brand">{sec.title[lang]}</h4>
-            <ul class="space-y-3">
-              {sec.items.map((it) => (
-                <li>
-                  <div class="flex items-end gap-2">
-                    <span class="font-semibold">{it.name[lang]}</span>
-                    <span class="menu-dots" aria-hidden="true"></span>
-                    <span class="glyph text-brand" aria-hidden="true">✦</span>
-                  </div>
-                  {it.note && <p class="text-sm italic text-ink-soft">{it.note[lang]}</p>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div class="relative mt-10 flex flex-col items-center gap-4 text-center">
-        <p class="max-w-xl text-ink-soft">{s.fullMenuNote}</p>
-        <a href={waLink(site.phones[0].whatsapp, askMsg)} target="_blank" rel="noopener" class="btn btn-outline">
-          <Icon name="whatsapp" /> {s.ask}
-        </a>
-      </div>
-    </div>
   </div>
 </section>
