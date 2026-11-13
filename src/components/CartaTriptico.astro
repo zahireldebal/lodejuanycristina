@@ -9,6 +9,9 @@
  * - Arrastre: el borde de la hoja sigue al dedo o al mouse; al soltar, la velocidad del gesto
  *   decide si termina de abrirse o vuelve (resortes, sin rebotes exagerados).
  * - La cámara (inclinación, tamaño y encuadre) se deriva de los ángulos de las hojas en cada cuadro.
+ * - Con "reducir movimiento" activado en el sistema: lo que hace la persona (click, toque, botones,
+ *   arrastre) se sigue animando, porque responde a su acción; se quitan la apertura automática,
+ *   y el saludo de la portada (lo que se mueve sin que la persona lo pida).
  */
 import '@fontsource/patrick-hand/400.css';
 import Icon from './Icon.astro';
@@ -252,7 +255,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tri-count { margin-left: .5rem; font-weight: 700; font-size: .9rem; color: #fbf5ec; font-variant-numeric: tabular-nums; }
 
     @media (prefers-reduced-motion: reduce) {
-      .tri-book { transform: none; }
       .tri-dot span { transition: none; }
     }
   }
@@ -327,7 +329,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     function render() {
       const span = cameraTargets();
       const open = clamp(1 - (a1.x / 180 + -a2.x / 180) / 2, 0, 1);
-      const e = reduce.matches ? 1 : smooth(open);
+      const e = smooth(open);
       const tx = 17 * (1 - e), ty = -12 * (1 - e) + flip.x, tz = 2 * (1 - e);
       const sc = cam.scale;
       book.style.transform = `translateX(${cam.shift * sc}px) scale(${sc}) rotateX(${tx}deg) rotateY(${ty}deg) rotateZ(${tz}deg)`;
@@ -390,24 +392,11 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     function playTo(to: number, done?: () => void) {
       const from = progress();
       if (Math.abs(to - from) < 0.5) { done?.(); return; }
-      if (reduce.matches) { fade(() => setProgress(to)); done?.(); return; }
       tween = { from, to, t0: performance.now(), dur: 380 + Math.abs(to - from) * 7.5, done };
       kick();
     }
 
-    // Movimiento reducido: sin giros, fundido entre estados
-    function fade(fn: () => void) {
-      root!.classList.add('is-fading');
-      later(() => {
-        fn();
-        for (const s of springs) { s.x = s.target; s.v = 0; }
-        cameraTargets();
-        render();
-        root!.classList.remove('is-fading');
-        settled();
-      }, 220);
-    }
-    const setFlip = (deg: number) => { if (reduce.matches) fade(() => { flip.target = deg; }); else { flip.target = deg; kick(); } };
+    const setFlip = (deg: number) => { flip.target = deg; kick(); };
 
     // Cuando la carta queda quieta y abierta en un celular, pasa al modo lectura
     function settled() {
@@ -429,7 +418,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     function openAll() {
       clearTimers(); interacted = true; stopPeek();
       const go = () => playTo(200);
-      if (state() === 'back') { setFlip(0); later(go, reduce.matches ? 300 : 650); } else go();
+      if (state() === 'back') { setFlip(0); later(go, 650); } else go();
     }
     function closeAll(then?: () => void) {
       clearTimers(); interacted = true; stopPeek();
@@ -468,7 +457,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       if (!down) return;
       const dx = e.clientX - down.x, dy = e.clientY - down.y;
       if (!dragging) {
-        if (reduce.matches || state() === 'back') return;
+        if (state() === 'back') return;
         if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return;
         const rc = leafC.getBoundingClientRect();
         const st = state();

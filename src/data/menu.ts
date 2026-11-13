@@ -74,16 +74,16 @@ export const featured: FeaturedDish[] = [
     },
   },
   {
-    name: { es: 'Cheesecake con salsa de chocolate', en: 'Cheesecake with chocolate sauce' },
+    name: { es: 'Postre helado', en: 'Ice-cream dessert' },
     description: {
-      es: 'Base crocante y salsa de chocolate por arriba.',
-      en: 'A crunchy base and chocolate sauce on top.',
+      es: 'Con salsa de chocolate caliente por arriba.',
+      en: 'With hot chocolate sauce on top.',
     },
     tag: { es: 'Postre', en: 'Dessert' },
     image: cheesecake,
     alt: {
-      es: 'Porción individual de cheesecake con salsa de chocolate y una hoja de menta',
-      en: 'Individual cheesecake topped with chocolate sauce and a mint leaf',
+      es: 'Porción individual de postre helado con salsa de chocolate y una hoja de menta',
+      en: 'Individual ice-cream dessert topped with chocolate sauce and a mint leaf',
     },
   },
 ];
