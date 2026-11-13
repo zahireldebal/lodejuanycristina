@@ -9,6 +9,8 @@
  * - Arrastre: el borde de la hoja sigue al dedo o al mouse; al soltar, la velocidad del gesto
  *   decide si termina de abrirse o vuelve (resortes, sin rebotes exagerados).
  * - La cámara (inclinación, tamaño y encuadre) se deriva de los ángulos de las hojas en cada cuadro.
+ * - Abierta en el celular, se queda entera y se puede acercar con dos dedos (zoom del navegador);
+ *   quieta, se dibuja plana para que el texto se vea nítido al ampliar.
  * - Con "reducir movimiento" activado en el sistema: lo que hace la persona (click, toque, botones,
  *   arrastre) se sigue animando, porque responde a su acción; se quitan la apertura automática,
  *   y el saludo de la portada (lo que se mueve sin que la persona lo pida).
@@ -90,20 +92,10 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       </div>
     </div>
 
-    <!-- Puntitos del modo lectura (celular, carta abierta) -->
-    <div class="tri-dots" data-tri-dots>
-      {[1, 2, 3].map((n) => (
-        <button type="button" class="tri-dot" data-tri-dot={n - 1} aria-label={panelLabel(n)} aria-current={n === 1 ? 'true' : undefined}>
-          <span aria-hidden="true"></span>
-        </button>
-      ))}
-      <span class="tri-count" data-tri-count aria-hidden="true">1/3</span>
-    </div>
-
     <div class="container-x">
       <p class="tri-hint mt-6 flex min-h-6 items-center justify-center gap-2 text-center text-sm text-cream/80" aria-hidden="true">
         <Icon name="rotate" class="size-4 shrink-0" />
-        <span data-tri-hint data-closed={s.hintClosed} data-half={s.hintHalf} data-open={s.hintOpen} data-back={s.hintBack}>{s.hintClosed}</span>
+        <span data-tri-hint data-closed={s.hintClosed} data-half={s.hintHalf} data-open={s.hintOpen} data-open-touch={s.hintOpenTouch} data-back={s.hintBack}>{s.hintClosed}</span>
       </p>
       <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
         <button type="button" class="btn tri-btn-primary" data-tri-open aria-expanded="false" aria-controls="tri-book">
@@ -145,15 +137,19 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     @media (min-width: 1024px) { .tri-root { --W: 320px; } }
 
     .tri-stage {
-      position: relative; height: calc(var(--H) + 4rem);
+      position: relative; height: calc(var(--H) + 4rem); /* el script la ajusta al tamaño de la carta */
       display: flex; align-items: center; justify-content: center;
       perspective: 2200px; perspective-origin: 50% 30%;
-      touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none;
+      /* pan-y: no bloquea el scroll vertical · pinch-zoom: se puede acercar con dos dedos */
+      touch-action: pan-y pinch-zoom; cursor: grab; user-select: none; -webkit-user-select: none;
       transition: opacity .22s ease;
     }
     .tri-stage.is-grabbing { cursor: grabbing; }
     .tri-stage:focus-visible { outline: 3px solid #ffd7a8; outline-offset: -6px; border-radius: 1rem; }
-    .tri-root.is-fading .tri-stage { opacity: 0; }
+    /* Con la página ampliada (pellizco), un dedo recorre la página en vez de mover la carta */
+    .tri-root.is-zoomed .tri-stage { touch-action: auto; cursor: auto; }
+    /* Carta abierta y quieta: se dibuja plana (sin capas 3D) para que el texto salga nítido al ampliar */
+    .tri-root.is-flat .tri-book, .tri-root.is-flat .tri-leaf { transform-style: flat; will-change: auto; }
 
     /* Estado inicial (cerrada) en CSS; después lo maneja el script cuadro a cuadro */
     .tri-book {
@@ -230,33 +226,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     .tc-info { font-weight: 700; font-size: .95em; line-height: 1.7; }
     .tc-name { font-size: 1.05em; }
 
-    /* ── Modo lectura (celular, carta abierta): carrusel con un panel por vez ── */
-    .tri-dots { display: none; }
-    .tri-root.is-reading .tri-stage { height: auto; display: block; perspective: none; touch-action: auto; cursor: auto; }
-    .tri-root.is-reading .tri-floor { display: none; }
-    .tri-root.is-reading .tri-book {
-      transform: none !important;
-      width: auto; height: auto; display: flex; gap: .75rem;
-      overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
-      padding: .25rem 7% 1rem; scrollbar-width: none;
-    }
-    .tri-root.is-reading .tri-book::-webkit-scrollbar { display: none; }
-    .tri-root.is-reading .tri-leaf { position: relative; left: auto; transform: none !important; flex: 0 0 86%; height: auto; scroll-snap-align: center; }
-    .tri-root.is-reading .tri-face { position: relative; inset: auto; transform: none; backface-visibility: visible; font-size: 16px; height: 100%; border-radius: 4px; box-shadow: 0 10px 30px -12px rgb(0 0 0 / .6); }
-    .tri-root.is-reading .tri-face::after, .tri-root.is-reading .tri-face::before { display: none; }
-    .tri-root.is-reading .tri-out { display: none; }
-    .tri-root.is-reading .cs-title { font-size: 1.9em; }
-    .tri-root.is-reading .cs-item, .tri-root.is-reading .cs-text { font-size: 1em; }
-    .tri-root.is-reading .tri-dots { display: flex; align-items: center; justify-content: center; gap: .25rem; margin-top: .25rem; }
-    .tri-root.is-reading .tri-hint { display: none; }
-    .tri-dot { display: grid; place-items: center; width: 2.25rem; height: 2.75rem; }
-    .tri-dot span { width: .6rem; height: .6rem; border-radius: 999px; background: rgb(251 245 236 / .35); transition: width .3s ease, background-color .3s ease; }
-    .tri-dot[aria-current='true'] span { width: 1.6rem; background: #fbf5ec; }
-    .tri-count { margin-left: .5rem; font-weight: 700; font-size: .9rem; color: #fbf5ec; font-variant-numeric: tabular-nums; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .tri-dot span { transition: none; }
-    }
   }
 </style>
 
@@ -277,10 +246,8 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     const flipLabel = root.querySelector<HTMLElement>('[data-tri-flip-label]')!;
     const hint = root.querySelector<HTMLElement>('[data-tri-hint]')!;
     const live = root.querySelector<HTMLElement>('[data-tri-live]')!;
-    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-tri-dot]')];
-    const count = root.querySelector<HTMLElement>('[data-tri-count]')!;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-    const mobile = matchMedia('(max-width: 767px)');
+    const touch = matchMedia('(pointer: coarse)');
 
     const rad = (d: number) => (d * Math.PI) / 180;
     const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -306,7 +273,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     };
     let tween: { from: number; to: number; t0: number; dur: number; done?: () => void } | null = null;
     let dragging: null | { spring: Spring; which: 'cover' | 'flap'; grabR: number; offset: number; hist: { t: number; a: number }[] } = null;
-    let reading = false, interacted = false, measured = false;
+    let interacted = false, measured = false;
     let raf = 0, last = 0;
     const timers: number[] = [];
     const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
@@ -332,9 +299,19 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       const e = smooth(open);
       const tx = 17 * (1 - e), ty = -12 * (1 - e) + flip.x, tz = 2 * (1 - e);
       const sc = cam.scale;
-      book.style.transform = `translateX(${cam.shift * sc}px) scale(${sc}) rotateX(${tx}deg) rotateY(${ty}deg) rotateZ(${tz}deg)`;
-      leafL.style.transform = `translateZ(2px) rotateY(${a1.x}deg)`;
-      leafR.style.transform = `translateZ(1px) rotateY(${a2.x}deg)`;
+      // abierta y quieta: transformaciones planas (2D) para que el texto se redibuje nítido al pellizcar
+      const flat = !tween && !dragging && a1.x === 0 && a2.x === 0 && flip.x === 0 && a1.target === 0 && a2.target === 0;
+      root!.classList.toggle('is-flat', flat);
+      if (flat) {
+        book.style.transform = `translateX(${cam.shift * sc}px) scale(${sc})`;
+        leafL.style.transform = leafR.style.transform = 'none';
+      } else {
+        book.style.transform = `translateX(${cam.shift * sc}px) scale(${sc}) rotateX(${tx}deg) rotateY(${ty}deg) rotateZ(${tz}deg)`;
+        leafL.style.transform = `translateZ(2px) rotateY(${a1.x}deg)`;
+        leafR.style.transform = `translateZ(1px) rotateY(${a2.x}deg)`;
+      }
+      // el escenario mide lo que ocupa la carta (abierta en el celular queda más baja, sin hueco abajo)
+      stage.style.height = `${Math.round(leafC.offsetHeight * sc + 64)}px`;
 
       // luz y sombras
       const s1 = Math.sin(rad(a1.x)), s2 = Math.sin(rad(-a2.x));
@@ -359,7 +336,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       btnOpen.disabled = st === 'open';
       btnClose.disabled = st === 'closed';
       flipLabel.textContent = st === 'back' ? btnFlip.dataset.labelFront! : btnFlip.dataset.labelBack!;
-      hint.textContent = hint.dataset[st] || '';
+      hint.textContent = (st === 'open' && touch.matches ? hint.dataset.openTouch : hint.dataset[st]) || '';
       live.textContent = live.dataset[st] || '';
     }
 
@@ -384,7 +361,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       }
       render();
       if (moving || dragging || tween) raf = requestAnimationFrame(frame);
-      else { raf = 0; last = 0; settled(); }
+      else { raf = 0; last = 0; }
     }
     const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
 
@@ -398,23 +375,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
 
     const setFlip = (deg: number) => { flip.target = deg; kick(); };
 
-    // Cuando la carta queda quieta y abierta en un celular, pasa al modo lectura
-    function settled() {
-      if (!reading && mobile.matches && state() === 'open' && !tween && !dragging) later(() => setReading(true), 150);
-    }
-    function setReading(on: boolean, after?: () => void) {
-      if (on === reading) { after?.(); return; }
-      root!.classList.add('is-fading');
-      later(() => {
-        reading = on;
-        root!.classList.toggle('is-reading', on);
-        if (on) { book.scrollLeft = 0; updateDots(); }
-        else { cameraTargets(); render(); }
-        requestAnimationFrame(() => root!.classList.remove('is-fading'));
-        if (after) later(after, 240);
-      }, 230);
-    }
-
     function openAll() {
       clearTimers(); interacted = true; stopPeek();
       const go = () => playTo(200);
@@ -422,7 +382,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     }
     function closeAll(then?: () => void) {
       clearTimers(); interacted = true; stopPeek();
-      setReading(false, () => playTo(0, then));
+      playTo(0, then);
     }
     function nextStep() {
       interacted = true; stopPeek();
@@ -434,7 +394,7 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
     function prevStep() {
       interacted = true; stopPeek();
       const st = state();
-      if (st === 'open') setReading(false, () => playTo(100));
+      if (st === 'open') playTo(100);
       else if (st === 'half') playTo(0);
     }
 
@@ -449,10 +409,23 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
 
     // ── Arrastre: el borde de la hoja sigue al dedo (Pointer Events: mouse y touch) ──
     let down: { x: number; y: number; t: number } | null = null;
+    const pointers = new Set<number>();
+    const zoomed = () => (window.visualViewport?.scale ?? 1) > 1.01;
     stage.addEventListener('pointerdown', (e) => {
-      if (reading || e.button !== 0) return;
+      pointers.add(e.pointerId);
+      // segundo dedo (pellizco) o página ampliada: la carta no se mueve, el navegador hace el zoom
+      if (pointers.size > 1 || zoomed()) { cancelGesture(); return; }
+      if (e.button !== 0) return;
       down = { x: e.clientX, y: e.clientY, t: performance.now() };
     });
+    function cancelGesture() {
+      down = null;
+      if (!dragging) return;
+      const d = dragging; dragging = null;
+      stage.classList.remove('is-grabbing');
+      d.spring.target = d.which === 'cover' ? (d.spring.x < 90 ? 0 : 180) : (d.spring.x > -90 ? 0 : -180);
+      kick();
+    }
     stage.addEventListener('pointermove', (e) => {
       if (!down) return;
       const dx = e.clientX - down.x, dy = e.clientY - down.y;
@@ -501,8 +474,10 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       }
       if (tap) nextStep();
     };
-    stage.addEventListener('pointerup', (e) => release(e, false));
-    stage.addEventListener('pointercancel', (e) => release(e, true));
+    stage.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); release(e, false); });
+    stage.addEventListener('pointercancel', (e) => { pointers.delete(e.pointerId); release(e, true); });
+    // marca la página ampliada para dejar que un dedo la recorra libremente
+    window.visualViewport?.addEventListener('resize', () => root!.classList.toggle('is-zoomed', zoomed()));
     stage.addEventListener('dragstart', (e) => e.preventDefault());
 
     // ── Teclado ──
@@ -512,17 +487,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
       else if (e.key === 'ArrowRight') { e.preventDefault(); nextStep(); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
     });
-
-    // ── Modo lectura: puntitos ──
-    function updateDots() {
-      const n = clamp(Math.round(book.scrollLeft / Math.max(1, (book.scrollWidth - book.clientWidth) / 2)), 0, 2);
-      dots.forEach((d, k) => (k === n ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
-      count.textContent = `${n + 1}/3`;
-    }
-    book.addEventListener('scroll', () => { if (reading) requestAnimationFrame(updateDots); }, { passive: true });
-    dots.forEach((d, i) => d.addEventListener('click', () => {
-      leaves[i].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
-    }));
 
     // ── Invitación: cerrada, la portada se levanta apenas cada tanto ──
     let peekTimer = 0;
@@ -536,8 +500,6 @@ const panelLabel = (n: number) => s.panel.replace('{n}', String(n));
 
     addEventListener('resize', () => {
       if (!measured) return;
-      if (reading && !mobile.matches) setReading(false);
-      else if (!reading && mobile.matches && state() === 'open') setReading(true);
       cameraTargets(); render();
     });
 
